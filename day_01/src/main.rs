@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     for (l, r) in list1.iter().zip(list2.iter()) {
         sum += (l - r).abs();
     }
-    println!("The sum is: {}", sum);
+    println!("The total distance is: {}", sum);
 
     let mut cum_score = 0;
     let mut score_by_id = HashMap::new();
