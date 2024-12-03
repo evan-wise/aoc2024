@@ -37,6 +37,7 @@ impl Iterator for FileCharIterator {
 }
 
 enum State {
+    Disabled,
     Seeking,
     MulFound,
     OpenParenFound,
@@ -46,7 +47,7 @@ enum State {
     CloseParenFound,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
     let chars = FileCharIterator::new("./data/memory.txt")?;
     let mut state = State::Seeking;
     let mut temp = String::new();
@@ -55,13 +56,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut total = 0;
     for char in chars.flatten() {
         match state {
-            State::Seeking => {
+            State::Disabled => {
                 temp.push(char);
-                if temp.len() > 3 {
+                if temp.len() > 4 {
                     temp = temp[1..].to_string();
                 }
-                if &temp == "mul" {
+                if &temp == "do()" {
+                    state = State::Seeking;
+                    temp = String::new();
+                }
+            },
+            State::Seeking => {
+                temp.push(char);
+                if temp.len() > 7 {
+                    temp = temp[1..].to_string();
+                }
+                if temp.ends_with("mul") {
                     state = State::MulFound;
+                    temp = String::new();
+                } else if &temp == "don't()" && handle_dos {
+                    state = State::Disabled;
                     temp = String::new();
                 }
             },
@@ -70,6 +84,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     state = State::OpenParenFound;
                 } else {
                     state = State::Seeking;
+                    temp = char.to_string();
                 }
             },
             State::OpenParenFound => {
@@ -78,6 +93,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     temp.push(char);
                 } else {
                     state = State::Seeking;
+                    temp = char.to_string();
                 }
             },
             State::FirstNumFound => {
@@ -93,7 +109,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     temp = String::new();
                 } else {
                     state = State::Seeking;
-                    temp = String::new();
+                    temp = char.to_string();
                 }
             },
             State::CommaFound => {
@@ -102,6 +118,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     temp.push(char);
                 } else {
                     state = State::Seeking;
+                    temp = char.to_string();
                 }
             },
             State::SecondNumFound => {
@@ -118,15 +135,20 @@ fn main() -> Result<(), Box<dyn Error>> {
                     temp = String::new();
                 } else {
                     state = State::Seeking;
-                    temp = String::new();
+                    temp = char.to_string();
                 }
             },
             State::CloseParenFound => {
-                temp.push(char);
                 state = State::Seeking;
+                temp = char.to_string();
             },
         }
     }
-    println!("The sum total of all the multiplications is: {}", total);
+    Ok(total)
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    println!("The sum total of all the multiplications is: {}", compute_total(false)?);
+    println!("The sum total of all the multiplications if conditionals are handled is: {}", compute_total(true)?);
     Ok(())
 }
