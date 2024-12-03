@@ -3,14 +3,6 @@ use std::path::Path;
 use std::io::{self, BufReader, Read};
 use std::error::Error;
 
-// fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-// where
-//     P: AsRef<Path>,
-// {
-//     let file = File::open(filename)?;
-//     Ok(io::BufReader::new(file).lines())
-// }
-
 struct FileCharIterator {
     reader: BufReader<File>
 }
