@@ -25,11 +25,11 @@ fn check_safety(nums: &Vec<i32>) -> bool {
     let mut is_safe = true;
     let mut maybe_prev = None;
     let mut maybe_dir = None;
-    let mut nums_iter = nums.iter();
-    while let Some(num) = nums_iter.next() {
+    for num in nums.iter() {
         if let Some(prev) = maybe_prev {
             let diff: i32 = num - prev;
-            if diff.abs() < 1 || diff.abs() > 3 {
+            let abs = diff.abs();
+            if abs < 1 || abs > 3 {
                 is_safe = false;
                 break;
             }
@@ -43,21 +43,31 @@ fn check_safety(nums: &Vec<i32>) -> bool {
             }
         }
         maybe_prev = Some(num);
-
     }
     is_safe
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut count = 0;
+    let mut dampener_count = 0;
     if let Ok(lines) = read_lines("./data/reports.txt") {
         for line in lines.flatten() {
             let nums = parse_line(&line)?;
             if check_safety(&nums) {
                 count += 1;
+                dampener_count += 1;
+            } else {
+                for i in 0..nums.len() {
+                    let reduced_nums = [&nums[..i], &nums[i+1..]].concat();
+                    if check_safety(&reduced_nums) {
+                        dampener_count += 1;
+                        break;
+                    }
+                }
             }
         }
     }
     println!("There are {} safe reports.", count);
+    println!("There are {} safe reports with the problem dampener.", dampener_count);
     Ok(())
 }
