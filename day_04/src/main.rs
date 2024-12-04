@@ -138,9 +138,7 @@ fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
 
 fn check_cross(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> bool {
     let x_len = wordsearch[i].len();
-    let y_len = wordsearch.len();
-    let mut cross = String::new();
-
+    let y_len = wordsearch.len(); let mut cross = String::new();
     cross.push(wordsearch[i][j] as char);
 
     if j + 2 < x_len {
@@ -155,15 +153,12 @@ fn check_cross(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> bool {
         cross.push(wordsearch[i+2][j] as char);
     }
 
-    if j +2 < x_len && i + 2 < y_len {
+    if j + 2 < x_len && i + 2 < y_len {
         cross.push(wordsearch[i+2][j+2] as char);
     }
 
     match cross.as_str() {
-        "MMASS" => true,
-        "SMASM" => true,
-        "SSAMM" => true,
-        "MSAMS" => true,
+        "MMASS" | "SMASM" | "SSAMM" | "MSAMS" => true,
         _ => false,
     }
 }
