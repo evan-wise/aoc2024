@@ -3,6 +3,7 @@ use std::path::Path;
 use std::io::{self, BufRead};
 use std::error::Error;
 use std::collections::HashMap;
+use std::cmp::Ordering;
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where
@@ -14,7 +15,8 @@ where
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut rules: HashMap<String, Vec<String>> = HashMap::new();
-    let mut total = 0;
+    let mut correct_total = 0;
+    let mut corrected_total = 0;
     let mut in_rules_section = true;
     if let Ok(lines) = read_lines("./data/rules_and_updates.txt") {
         for line in lines.flatten() {
@@ -33,15 +35,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     rules.insert(before, vec![after]);
                 }
             } else {
-                let values: Vec<&str> = line.split(',').collect();
+                let mut values: Vec<&str> = line.split(',').collect();
                 let num_values = values.len();
-                let mut middle = 0; 
                 let mut is_correct = true;
                 for i in 0..num_values {
                     let value = values[i].to_string();
-                    if i == num_values / 2 {
-                        middle = value.parse::<i32>()?;
-                    }
                     for j in i+1..num_values {
                         let other = values[j];
                         let afters = rules.get(other).ok_or("failed to retrieve")?;
@@ -55,11 +53,29 @@ fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
                 if is_correct {
-                    total += middle;
+                    correct_total += values[num_values / 2].parse::<i32>()?;
+                } else {
+                    // This feels really wonky but I am too much of a noob to sort it out at the
+                    // moment.
+                    values.sort_by(|a, b| {
+                        let default = &Vec::new();
+                        let afters_a = rules.get(*a).unwrap_or(default);
+                        let afters_b = rules.get(*b).unwrap_or(default);
+                        if afters_a.contains(&(*b).to_string()) {
+                            return Ordering::Less;
+                        }
+                        if afters_b.contains(&(*a).to_string()) {
+                            return Ordering::Greater;
+                        }
+                        Ordering::Equal
+                    });
+
+                    corrected_total += values[num_values / 2].parse::<i32>()?;
                 }
             }
         }
     }
-    println!("The sum of the middle values of the correct updates is: {}", total);
+    println!("The sum of the middle values of the already correct updates is: {}", correct_total);
+    println!("The sum of the middle values of the corrected updates is: {}", corrected_total);
     Ok(())
 }
