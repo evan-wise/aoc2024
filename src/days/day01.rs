@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-use std::error::Error;
 use crate::aoc::read_lines;
 use crate::days::Solution;
+use std::collections::HashMap;
+use std::error::Error;
 
 pub struct Day01;
 
@@ -47,7 +47,6 @@ impl Solution for Day01 {
             }
         }
         println!("The similarity score is: {}", cum_score);
-
 
         Ok(())
     }

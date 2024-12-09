@@ -23,4 +23,3 @@ pub fn solutions() -> Vec<Box<dyn Solution>> {
         Box::new(day07::Day07 {}),
     ]
 }
-

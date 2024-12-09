@@ -1,8 +1,8 @@
-use std::error::Error;
-use std::collections::HashMap;
-use std::cmp::Ordering;
 use crate::aoc::read_lines;
 use crate::days::Solution;
+use std::cmp::Ordering;
+use std::collections::HashMap;
+use std::error::Error;
 
 pub struct Day05;
 
@@ -34,7 +34,7 @@ impl Solution for Day05 {
                     let mut is_correct = true;
                     for i in 0..num_values {
                         let value = values[i].to_string();
-                        for j in i+1..num_values {
+                        for j in i + 1..num_values {
                             let other = values[j];
                             let afters = rules.get(other).ok_or("failed to retrieve")?;
                             if afters.contains(&value) {
@@ -69,8 +69,14 @@ impl Solution for Day05 {
                 }
             }
         }
-        println!("The sum of the middle values of the already correct updates is: {}", correct_total);
-        println!("The sum of the middle values of the corrected updates is: {}", corrected_total);
+        println!(
+            "The sum of the middle values of the already correct updates is: {}",
+            correct_total
+        );
+        println!(
+            "The sum of the middle values of the corrected updates is: {}",
+            corrected_total
+        );
         Ok(())
     }
 }

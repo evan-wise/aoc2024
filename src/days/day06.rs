@@ -1,7 +1,7 @@
-use std::collections::HashSet;
-use std::error::Error;
 use crate::aoc::{read_chars, FileCharIterator};
 use crate::days::Solution;
+use std::collections::HashSet;
+use std::error::Error;
 
 pub struct Day06;
 
@@ -111,31 +111,40 @@ impl State {
         }
         let (i, j) = self.guard.position;
         let (k, l, dir) = match self.guard.direction {
-            Direction::Up => (i-1, j, Direction::Right),
-            Direction::Down => (i+1, j, Direction::Left),
-            Direction::Left => (i, j-1, Direction::Up),
-            Direction::Right => (i, j+1, Direction::Down),
+            Direction::Up => (i - 1, j, Direction::Right),
+            Direction::Down => (i + 1, j, Direction::Left),
+            Direction::Left => (i, j - 1, Direction::Up),
+            Direction::Right => (i, j + 1, Direction::Down),
         };
         match self.map[k][l] {
             CellState::Obstacle => {
                 self.guard.direction = dir;
                 self.history.push(self.guard.clone());
                 self.history_lookup.insert(self.guard.clone());
-                Ok(StepResult { cell: CellState::Obstacle, loop_detected: false })
-            },
+                Ok(StepResult {
+                    cell: CellState::Obstacle,
+                    loop_detected: false,
+                })
+            }
             CellState::Unvisited => {
                 self.guard.position = (k, l);
                 self.map[k][l] = CellState::Visited;
                 self.history.push(self.guard.clone());
                 self.history_lookup.insert(self.guard.clone());
-                Ok(StepResult { cell: CellState::Unvisited, loop_detected: false })
-            },
+                Ok(StepResult {
+                    cell: CellState::Unvisited,
+                    loop_detected: false,
+                })
+            }
             CellState::Visited => {
                 self.guard.position = (k, l);
                 self.history.push(self.guard.clone());
                 let loop_detected = !self.history_lookup.insert(self.guard.clone());
-                Ok(StepResult { cell: CellState::Visited, loop_detected })
-            },
+                Ok(StepResult {
+                    cell: CellState::Visited,
+                    loop_detected,
+                })
+            }
         }
     }
 
@@ -147,11 +156,10 @@ impl State {
                 match cell {
                     CellState::Unvisited | CellState::Visited => {
                         new_row.push(CellState::Unvisited);
-                    },
+                    }
                     CellState::Obstacle => {
                         new_row.push(CellState::Obstacle);
                     }
-
                 }
             }
             new_map.push(new_row);
@@ -171,25 +179,25 @@ fn parse_input(chars: FileCharIterator) -> Result<State, Box<dyn Error>> {
             '.' => {
                 row.push(CellState::Unvisited);
                 j += 1;
-            },
+            }
             '#' => {
                 row.push(CellState::Obstacle);
                 j += 1;
-            },
+            }
             '^' => {
                 row.push(CellState::Unvisited);
                 position = (i, j);
                 j += 1;
-            },
+            }
             '\n' => {
                 map.push(row);
                 row = Vec::new();
                 i += 1;
                 j = 0;
-            },
+            }
             _ => {
                 return Err("invalid character".into());
-            },
+            }
         }
     }
     let mut state = State::new(map);
@@ -205,7 +213,7 @@ fn do_part1(state: &mut State) -> Result<(), Box<dyn Error>> {
                 if step_result.cell == CellState::Unvisited {
                     num_positions += 1;
                 }
-            },
+            }
             Err(_) => break,
         }
     }
@@ -219,10 +227,10 @@ fn do_part2(state: &State) -> Result<(), Box<dyn Error>> {
     for guard in history {
         let (i, j) = guard.position;
         let (k, l) = match guard.direction {
-            Direction::Up => (i-1, j),
-            Direction::Down => (i+1, j),
-            Direction::Left => (i, j-1),
-            Direction::Right => (i, j+1),
+            Direction::Up => (i - 1, j),
+            Direction::Down => (i + 1, j),
+            Direction::Left => (i, j - 1),
+            Direction::Right => (i, j + 1),
         };
         if loops.contains(&(k, l)) {
             continue;
@@ -242,7 +250,7 @@ fn do_part2(state: &State) -> Result<(), Box<dyn Error>> {
                         loops.insert((k, l));
                         break;
                     }
-                },
+                }
                 Err(_) => break,
             }
         }

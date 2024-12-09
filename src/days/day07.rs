@@ -1,6 +1,6 @@
-use std::error::Error;
 use crate::aoc::read_lines;
 use crate::days::Solution;
+use std::error::Error;
 
 pub struct Day07;
 
@@ -15,7 +15,10 @@ impl Solution for Day07 {
                 return Err("invalid line".into());
             }
             let test_val = chunks[0].parse::<u64>()?;
-            let nums: Vec<u64> = chunks[1].split(" ").map(|s| s.parse::<u64>().unwrap()).collect();
+            let nums: Vec<u64> = chunks[1]
+                .split(" ")
+                .map(|s| s.parse::<u64>().unwrap())
+                .collect();
             if check_equation(test_val, &nums, false) {
                 total += test_val;
             }
@@ -24,7 +27,10 @@ impl Solution for Day07 {
             }
         }
         println!("The total calibration result is: {}", total);
-        println!("The total calibration result (allowing for concatenation) is: {}", total_with_concat);
+        println!(
+            "The total calibration result (allowing for concatenation) is: {}",
+            total_with_concat
+        );
         Ok(())
     }
 }
@@ -50,7 +56,11 @@ fn check_equation(test_val: u64, nums: &[u64], allow_concat: bool) -> bool {
         let test_str = test_val.to_string();
         let last_str = last.to_string();
         if test_str.ends_with(&last_str) {
-            let new_test_val = test_str.strip_suffix(&last_str).unwrap().parse::<u64>().unwrap_or(0);
+            let new_test_val = test_str
+                .strip_suffix(&last_str)
+                .unwrap()
+                .parse::<u64>()
+                .unwrap_or(0);
             if check_equation(new_test_val, rest, allow_concat) {
                 return true;
             }

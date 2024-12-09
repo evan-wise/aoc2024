@@ -1,6 +1,6 @@
-use std::error::Error;
 use crate::aoc::read_lines;
 use crate::days::Solution;
+use std::error::Error;
 
 pub struct Day04;
 
@@ -37,25 +37,11 @@ fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
 
     // Look in each direction.
     for k in 1..=3 {
-        if j+k >= x_len {
+        if j + k >= x_len {
             break;
         }
 
-        if wordsearch[i][j+k] != word[k] {
-            break;
-        }
-
-        if k == 3 {
-            count += 1;
-        }
-    }
-
-    for k in 1..=3 {
-        if j+k >= x_len || i+k >= y_len {
-            break;
-        }
-
-        if wordsearch[i+k][j+k] != word[k] {
+        if wordsearch[i][j + k] != word[k] {
             break;
         }
 
@@ -65,11 +51,11 @@ fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
     }
 
     for k in 1..=3 {
-        if i+k >= y_len {
+        if j + k >= x_len || i + k >= y_len {
             break;
         }
 
-        if wordsearch[i+k][j] != word[k] {
+        if wordsearch[i + k][j + k] != word[k] {
             break;
         }
 
@@ -79,11 +65,25 @@ fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
     }
 
     for k in 1..=3 {
-        if j < k || i+k >= y_len {
+        if i + k >= y_len {
             break;
         }
 
-        if wordsearch[i+k][j-k] != word[k] {
+        if wordsearch[i + k][j] != word[k] {
+            break;
+        }
+
+        if k == 3 {
+            count += 1;
+        }
+    }
+
+    for k in 1..=3 {
+        if j < k || i + k >= y_len {
+            break;
+        }
+
+        if wordsearch[i + k][j - k] != word[k] {
             break;
         }
 
@@ -97,7 +97,7 @@ fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
             break;
         }
 
-        if wordsearch[i][j-k] != word[k] {
+        if wordsearch[i][j - k] != word[k] {
             break;
         }
 
@@ -111,7 +111,7 @@ fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
             break;
         }
 
-        if wordsearch[i-k][j-k] != word[k] {
+        if wordsearch[i - k][j - k] != word[k] {
             break;
         }
 
@@ -124,8 +124,8 @@ fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
         if i < k {
             break;
         }
-        
-        if wordsearch[i-k][j] != word[k] {
+
+        if wordsearch[i - k][j] != word[k] {
             break;
         }
 
@@ -139,7 +139,7 @@ fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
             break;
         }
 
-        if wordsearch[i-k][j+k] != word[k] {
+        if wordsearch[i - k][j + k] != word[k] {
             break;
         }
 
@@ -153,23 +153,24 @@ fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
 
 fn check_cross(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> bool {
     let x_len = wordsearch[i].len();
-    let y_len = wordsearch.len(); let mut cross = String::new();
+    let y_len = wordsearch.len();
+    let mut cross = String::new();
     cross.push(wordsearch[i][j] as char);
 
     if j + 2 < x_len {
-        cross.push(wordsearch[i][j+2] as char);
+        cross.push(wordsearch[i][j + 2] as char);
     }
 
     if j + 1 < x_len && i + 1 < y_len {
-        cross.push(wordsearch[i+1][j+1] as char);
+        cross.push(wordsearch[i + 1][j + 1] as char);
     }
 
     if i + 2 < y_len {
-        cross.push(wordsearch[i+2][j] as char);
+        cross.push(wordsearch[i + 2][j] as char);
     }
 
     if j + 2 < x_len && i + 2 < y_len {
-        cross.push(wordsearch[i+2][j+2] as char);
+        cross.push(wordsearch[i + 2][j + 2] as char);
     }
 
     match cross.as_str() {

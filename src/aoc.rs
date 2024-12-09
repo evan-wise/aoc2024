@@ -1,9 +1,9 @@
 use std::fs::File;
+use std::io::{self, BufRead, BufReader, Lines, Read};
 use std::path::Path;
-use std::io::{self, BufReader, BufRead, Read, Lines};
 
 pub struct FileCharIterator {
-    reader: BufReader<File>
+    reader: BufReader<File>,
 }
 
 impl FileCharIterator {
@@ -16,7 +16,7 @@ impl FileCharIterator {
 
 impl Iterator for FileCharIterator {
     type Item = io::Result<char>;
-    
+
     fn next(&mut self) -> Option<Self::Item> {
         let mut buf = [0u8; 1];
         match self.reader.read_exact(&mut buf) {
@@ -29,7 +29,7 @@ impl Iterator for FileCharIterator {
 
 pub fn read_chars<P>(path: P) -> io::Result<FileCharIterator>
 where
- P: AsRef<Path>
+    P: AsRef<Path>,
 {
     FileCharIterator::new(path)
 }
@@ -41,5 +41,3 @@ where
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
 }
-
-

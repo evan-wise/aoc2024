@@ -1,13 +1,19 @@
-use std::error::Error;
 use crate::aoc::read_chars;
 use crate::days::Solution;
+use std::error::Error;
 
 pub struct Day03;
 
 impl Solution for Day03 {
     fn solve(&self) -> Result<(), Box<dyn Error>> {
-        println!("The sum total of all the multiplications is: {}", compute_total(false)?);
-        println!("The sum total of all the multiplications if conditionals are handled is: {}", compute_total(true)?);
+        println!(
+            "The sum total of all the multiplications is: {}",
+            compute_total(false)?
+        );
+        println!(
+            "The sum total of all the multiplications if conditionals are handled is: {}",
+            compute_total(true)?
+        );
         Ok(())
     }
 }
@@ -41,7 +47,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
                     state = State::Seeking;
                     temp = String::new();
                 }
-            },
+            }
             State::Seeking => {
                 temp.push(char);
                 if temp.len() > 7 {
@@ -54,7 +60,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
                     state = State::Disabled;
                     temp = String::new();
                 }
-            },
+            }
             State::MulFound => {
                 if char == '(' {
                     state = State::OpenParenFound;
@@ -62,7 +68,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
                     state = State::Seeking;
                     temp = char.to_string();
                 }
-            },
+            }
             State::OpenParenFound => {
                 if char.is_digit(10) {
                     state = State::FirstNumFound;
@@ -71,7 +77,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
                     state = State::Seeking;
                     temp = char.to_string();
                 }
-            },
+            }
             State::FirstNumFound => {
                 if char.is_digit(10) {
                     temp.push(char);
@@ -87,7 +93,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
                     state = State::Seeking;
                     temp = char.to_string();
                 }
-            },
+            }
             State::CommaFound => {
                 if char.is_digit(10) {
                     state = State::SecondNumFound;
@@ -96,7 +102,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
                     state = State::Seeking;
                     temp = char.to_string();
                 }
-            },
+            }
             State::SecondNumFound => {
                 if char.is_digit(10) {
                     temp.push(char);
@@ -113,11 +119,11 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
                     state = State::Seeking;
                     temp = char.to_string();
                 }
-            },
+            }
             State::CloseParenFound => {
                 state = State::Seeking;
                 temp = char.to_string();
-            },
+            }
         }
     }
     Ok(total)

@@ -1,9 +1,9 @@
 mod aoc;
 mod days;
 
-use std::time::{Duration, Instant};
+use crate::days::*;
 use std::error::Error;
-use crate::days::{*};
+use std::time::{Duration, Instant};
 
 fn run_solution(solution: &Box<dyn Solution>) -> Result<Duration, Box<dyn Error>> {
     let timer = Instant::now();
@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         if i > 0 {
             println!("");
         }
-        println!("~- DAY {:0>2} -~", i+1);
+        println!("~- DAY {:0>2} -~", i + 1);
         let duration = run_solution(&solutions[i])?;
         println!("Run time: {}ms", duration.as_millis());
     }
