@@ -1,5 +1,33 @@
 use std::error::Error;
 use crate::aoc::read_lines;
+use crate::days::Solution;
+
+pub struct Day07;
+
+impl Solution for Day07 {
+    fn solve(&self) -> Result<(), Box<dyn Error>> {
+        let mut total = 0;
+        let mut total_with_concat = 0;
+        let lines = read_lines("./data/calibrations.txt")?;
+        for line in lines.flatten() {
+            let chunks: Vec<&str> = line.split(": ").collect();
+            if chunks.len() != 2 {
+                return Err("invalid line".into());
+            }
+            let test_val = chunks[0].parse::<u64>()?;
+            let nums: Vec<u64> = chunks[1].split(" ").map(|s| s.parse::<u64>().unwrap()).collect();
+            if check_equation(test_val, &nums, false) {
+                total += test_val;
+            }
+            if check_equation(test_val, &nums, true) {
+                total_with_concat += test_val;
+            }
+        }
+        println!("The total calibration result is: {}", total);
+        println!("The total calibration result (allowing for concatenation) is: {}", total_with_concat);
+        Ok(())
+    }
+}
 
 fn check_equation(test_val: u64, nums: &[u64], allow_concat: bool) -> bool {
     if nums.len() == 0 {
@@ -34,27 +62,4 @@ fn check_equation(test_val: u64, nums: &[u64], allow_concat: bool) -> bool {
     }
 
     false
-}
-
-pub fn solve() -> Result<(), Box<dyn Error>> {
-    let mut total = 0;
-    let mut total_with_concat = 0;
-    let lines = read_lines("./data/calibrations.txt")?;
-    for line in lines.flatten() {
-        let chunks: Vec<&str> = line.split(": ").collect();
-        if chunks.len() != 2 {
-            return Err("invalid line".into());
-        }
-        let test_val = chunks[0].parse::<u64>()?;
-        let nums: Vec<u64> = chunks[1].split(" ").map(|s| s.parse::<u64>().unwrap()).collect();
-        if check_equation(test_val, &nums, false) {
-            total += test_val;
-        }
-        if check_equation(test_val, &nums, true) {
-            total_with_concat += test_val;
-        }
-    }
-    println!("The total calibration result is: {}", total);
-    println!("The total calibration result (allowing for concatenation) is: {}", total_with_concat);
-    Ok(())
 }

@@ -1,5 +1,16 @@
 use std::error::Error;
 use crate::aoc::read_chars;
+use crate::days::Solution;
+
+pub struct Day03;
+
+impl Solution for Day03 {
+    fn solve(&self) -> Result<(), Box<dyn Error>> {
+        println!("The sum total of all the multiplications is: {}", compute_total(false)?);
+        println!("The sum total of all the multiplications if conditionals are handled is: {}", compute_total(true)?);
+        Ok(())
+    }
+}
 
 enum State {
     Disabled,
@@ -110,10 +121,4 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
         }
     }
     Ok(total)
-}
-
-pub fn solve() -> Result<(), Box<dyn Error>> {
-    println!("The sum total of all the multiplications is: {}", compute_total(false)?);
-    println!("The sum total of all the multiplications if conditionals are handled is: {}", compute_total(true)?);
-    Ok(())
 }

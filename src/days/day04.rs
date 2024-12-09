@@ -1,5 +1,29 @@
 use std::error::Error;
 use crate::aoc::read_lines;
+use crate::days::Solution;
+
+pub struct Day04;
+
+impl Solution for Day04 {
+    fn solve(&self) -> Result<(), Box<dyn Error>> {
+        if let Ok(lines) = read_lines("./data/wordsearch.txt") {
+            let wordsearch: Vec<Vec<u8>> = lines.flatten().map(|s| s.into_bytes()).collect();
+            let mut xmas_total = 0;
+            let mut cross_total = 0;
+            for (i, s) in wordsearch.iter().enumerate() {
+                for (j, _c) in s.iter().enumerate() {
+                    xmas_total += count_xmas(i, j, &wordsearch);
+                    if check_cross(i, j, &wordsearch) {
+                        cross_total += 1;
+                    }
+                }
+            }
+            println!("The word \"XMAS\" appears {} time(s).", xmas_total);
+            println!("The \"X-MAS\"es appears {} time(s).", cross_total);
+        }
+        Ok(())
+    }
+}
 
 fn count_xmas(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> i32 {
     let mut count = 0;
@@ -152,24 +176,4 @@ fn check_cross(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> bool {
         "MMASS" | "SMASM" | "SSAMM" | "MSAMS" => true,
         _ => false,
     }
-}
-
-
-pub fn solve() -> Result<(), Box<dyn Error>> {
-    if let Ok(lines) = read_lines("./data/wordsearch.txt") {
-        let wordsearch: Vec<Vec<u8>> = lines.flatten().map(|s| s.into_bytes()).collect();
-        let mut xmas_total = 0;
-        let mut cross_total = 0;
-        for (i, s) in wordsearch.iter().enumerate() {
-            for (j, _c) in s.iter().enumerate() {
-                xmas_total += count_xmas(i, j, &wordsearch);
-                if check_cross(i, j, &wordsearch) {
-                    cross_total += 1;
-                }
-            }
-        }
-        println!("The word \"XMAS\" appears {} time(s).", xmas_total);
-        println!("The \"X-MAS\"es appears {} time(s).", cross_total);
-    }
-    Ok(())
 }

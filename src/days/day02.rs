@@ -1,7 +1,39 @@
-use std::num::ParseIntError;
-use std::error::Error;
 use crate::aoc::read_lines;
+use crate::days::Solution;
+use std::error::Error;
+use std::num::ParseIntError;
 
+pub struct Day02;
+
+impl Solution for Day02 {
+    fn solve(&self) -> Result<(), Box<dyn Error>> {
+        let mut count = 0;
+        let mut dampener_count = 0;
+        if let Ok(lines) = read_lines("./data/reports.txt") {
+            for line in lines.flatten() {
+                let nums = parse_line(&line)?;
+                if check_safety(&nums) {
+                    count += 1;
+                    dampener_count += 1;
+                } else {
+                    for i in 0..nums.len() {
+                        let reduced_nums = [&nums[..i], &nums[i + 1..]].concat();
+                        if check_safety(&reduced_nums) {
+                            dampener_count += 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        println!("There are {} safe reports.", count);
+        println!(
+            "There are {} safe reports with the problem dampener.",
+            dampener_count
+        );
+        Ok(())
+    }
+}
 
 fn parse_line(line: &str) -> Result<Vec<i32>, ParseIntError> {
     let mut nums = Vec::new();
@@ -36,29 +68,4 @@ fn check_safety(nums: &Vec<i32>) -> bool {
         maybe_prev = Some(num);
     }
     is_safe
-}
-
-pub fn solve() -> Result<(), Box<dyn Error>> {
-    let mut count = 0;
-    let mut dampener_count = 0;
-    if let Ok(lines) = read_lines("./data/reports.txt") {
-        for line in lines.flatten() {
-            let nums = parse_line(&line)?;
-            if check_safety(&nums) {
-                count += 1;
-                dampener_count += 1;
-            } else {
-                for i in 0..nums.len() {
-                    let reduced_nums = [&nums[..i], &nums[i+1..]].concat();
-                    if check_safety(&reduced_nums) {
-                        dampener_count += 1;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    println!("There are {} safe reports.", count);
-    println!("There are {} safe reports with the problem dampener.", dampener_count);
-    Ok(())
 }

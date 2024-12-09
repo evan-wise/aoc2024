@@ -1,6 +1,23 @@
 use std::collections::HashSet;
 use std::error::Error;
 use crate::aoc::{read_chars, FileCharIterator};
+use crate::days::Solution;
+
+pub struct Day06;
+
+impl Solution for Day06 {
+    fn solve(&self) -> Result<(), Box<dyn Error>> {
+        let chars = read_chars("./data/map.txt")?;
+
+        let mut state = parse_input(chars)?;
+
+        do_part1(&mut state)?;
+
+        do_part2(&state)?;
+
+        Ok(())
+    }
+}
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 enum Direction {
@@ -231,17 +248,5 @@ fn do_part2(state: &State) -> Result<(), Box<dyn Error>> {
         }
     }
     println!("{} loop(s) found.", loops.len());
-    Ok(())
-}
-
-pub fn solve() -> Result<(), Box<dyn Error>> {
-    let chars = read_chars("./data/map.txt")?;
-
-    let mut state = parse_input(chars)?;
-
-    do_part1(&mut state)?;
-
-    do_part2(&state)?;
-
     Ok(())
 }
