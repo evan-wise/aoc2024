@@ -37,15 +37,19 @@ impl Solution for Day08 {
 
         let map = Map::new(width, j);
         let mut antinodes = HashSet::new();
+        let mut harmonic_antinodes = HashSet::new();
         for (_, antennas) in antennas_by_freq {
             for (a, b) in pairs(antennas) {
-                let antinode = find_antinode(a.pos, b.pos);
-                if map.check_pos(antinode) {
+                if let Some(antinode) = find_antinode(a.pos, b.pos, &map) {
                     antinodes.insert(antinode);
+                }
+                for antinode in find_harmonic_antinodes(a.pos, b.pos, &map) {
+                    harmonic_antinodes.insert(antinode);
                 }
             }
         }
         println!("Antinodes: {}", antinodes.len());
+        println!("Harmonic antinodes: {}", harmonic_antinodes.len());
 
         Ok(())
     }
@@ -103,11 +107,23 @@ fn sub(pos1: (i32, i32), pos2: (i32, i32)) -> (i32, i32) {
     (pos1.0 - pos2.0, pos1.1 - pos2.1)
 }
 
-fn mul(scalar: i32, pos: (i32, i32)) -> (i32, i32) {
-    (scalar * pos.0, scalar * pos.1)
+fn find_antinode(pos1: (i32, i32), pos2: (i32, i32), map: &Map) -> Option<(i32, i32)> {
+    let from = sub(pos2, pos1);
+    let antinode = add(pos2, from);
+    if map.check_pos(antinode) {
+        Some(antinode)
+    } else {
+        None
+    }
 }
 
-fn find_antinode(pos1: (i32, i32), pos2: (i32, i32)) -> (i32, i32) {
+fn find_harmonic_antinodes(pos1: (i32, i32), pos2: (i32, i32), map: &Map) -> Vec<(i32, i32)> {
     let from = sub(pos2, pos1);
-    add(pos1, mul(2, from))
+    let mut antinode = pos2;
+    let mut antinodes = Vec::new();
+    while map.check_pos(antinode) {
+        antinodes.push(antinode);
+        antinode = add(antinode, from);
+    }
+    antinodes
 }
