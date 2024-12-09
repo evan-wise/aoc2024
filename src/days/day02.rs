@@ -9,7 +9,7 @@ impl Solution for Day02 {
     fn solve(&self) -> Result<(), Box<dyn Error>> {
         let mut count = 0;
         let mut dampener_count = 0;
-        if let Ok(lines) = read_lines("./data/reports.txt") {
+        if let Ok(lines) = read_lines("./data/day02.txt") {
             for line in lines.flatten() {
                 let nums = parse_line(&line)?;
                 if check_safety(&nums) {

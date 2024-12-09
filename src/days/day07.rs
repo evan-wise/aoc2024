@@ -8,7 +8,7 @@ impl Solution for Day07 {
     fn solve(&self) -> Result<(), Box<dyn Error>> {
         let mut total = 0;
         let mut total_with_concat = 0;
-        let lines = read_lines("./data/calibrations.txt")?;
+        let lines = read_lines("./data/day07.txt")?;
         for line in lines.flatten() {
             let chunks: Vec<&str> = line.split(": ").collect();
             if chunks.len() != 2 {

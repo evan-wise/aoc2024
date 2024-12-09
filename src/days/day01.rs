@@ -9,7 +9,7 @@ impl Solution for Day01 {
     fn solve(&self) -> Result<(), Box<dyn Error>> {
         let mut list1 = vec![0; 1000];
         let mut list2 = vec![0; 1000];
-        if let Ok(lines) = read_lines("./data/lists.txt") {
+        if let Ok(lines) = read_lines("./data/day01.txt") {
             for (i, line) in lines.flatten().enumerate() {
                 let mut iter = line.split("   ");
                 let str1 = iter.next().ok_or("Malformed line")?;

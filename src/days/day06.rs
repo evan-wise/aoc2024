@@ -7,7 +7,7 @@ pub struct Day06;
 
 impl Solution for Day06 {
     fn solve(&self) -> Result<(), Box<dyn Error>> {
-        let chars = read_chars("./data/map.txt")?;
+        let chars = read_chars("./data/day06.txt")?;
 
         let mut state = parse_input(chars)?;
 

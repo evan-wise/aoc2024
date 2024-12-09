@@ -6,7 +6,7 @@ pub struct Day04;
 
 impl Solution for Day04 {
     fn solve(&self) -> Result<(), Box<dyn Error>> {
-        if let Ok(lines) = read_lines("./data/wordsearch.txt") {
+        if let Ok(lines) = read_lines("./data/day04.txt") {
             let wordsearch: Vec<Vec<u8>> = lines.flatten().map(|s| s.into_bytes()).collect();
             let mut xmas_total = 0;
             let mut cross_total = 0;

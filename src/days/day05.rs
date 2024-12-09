@@ -12,7 +12,7 @@ impl Solution for Day05 {
         let mut correct_total = 0;
         let mut corrected_total = 0;
         let mut in_rules_section = true;
-        if let Ok(lines) = read_lines("./data/rules_and_updates.txt") {
+        if let Ok(lines) = read_lines("./data/day05.txt") {
             for line in lines.flatten() {
                 if &line == "" {
                     in_rules_section = false;

@@ -30,7 +30,7 @@ enum State {
 }
 
 fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
-    let chars = read_chars("./data/memory.txt")?;
+    let chars = read_chars("./data/day03.txt")?;
     let mut state = State::Seeking;
     let mut temp = String::new();
     let mut first_num = 0;
