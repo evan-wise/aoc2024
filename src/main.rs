@@ -21,6 +21,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
         Some(solution_num) => {
+            if solution_num < 1 || solution_num > solutions.len() {
+                return Err("argument out of range".into());
+            }
             println!("~- DAY {:0>2} -~", solution_num);
             let duration = run_solution(&solutions[solution_num - 1])?;
             println!("Run time: {}ms", duration.as_millis());
