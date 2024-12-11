@@ -8,6 +8,7 @@ pub mod day07;
 pub mod day08;
 pub mod day09;
 pub mod day10;
+pub mod day11;
 
 use std::error::Error;
 
@@ -27,5 +28,6 @@ pub fn solutions() -> Vec<Box<dyn Solution>> {
         Box::new(day08::Day08 {}),
         Box::new(day09::Day09 {}),
         Box::new(day10::Day10 {}),
+        Box::new(day11::Day11 {}),
     ]
 }
