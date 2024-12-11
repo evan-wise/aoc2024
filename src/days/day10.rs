@@ -34,12 +34,18 @@ impl Solution for Day10 {
         }
         let map = Map::new(grid);
         let mut score = 0;
-        for trailhead in trailheads {
+        for trailhead in &trailheads {
             let mut summits = HashSet::new();
-            map.find_summits(trailhead, &mut summits);
+            map.find_summits(*trailhead, &mut summits);
             score += summits.len();
         }
         println!("The total score for all the trailheads is: {}", score);
+
+        let mut rating = 0;
+        for trailhead in &trailheads {
+            rating += map.compute_rating(*trailhead);
+        }
+        println!("The sum of all the ratings is: {}", rating);
         Ok(())
     }
 }
@@ -89,5 +95,22 @@ impl Map {
                 self.find_summits((i, j), summits);
             }
         }
+    }
+
+    fn compute_rating(&self, trailhead: (i32, i32)) -> i32 {
+        let mut rating = 0;
+        let (i, j) = trailhead;
+        let neighbors = self.get_neighbors(trailhead);
+        let cur_topo_height = self.grid[j as usize][i as usize];
+        if cur_topo_height == 9 {
+            return 1;
+        }
+        for (i, j) in neighbors {
+            let next_topo_height = self.grid[j as usize][i as usize];
+            if next_topo_height.saturating_sub(cur_topo_height) == 1 {
+                rating += self.compute_rating((i, j));
+            }
+        }
+        rating
     }
 }
