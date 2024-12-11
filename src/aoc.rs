@@ -34,7 +34,7 @@ where
     FileCharIterator::new(path)
 }
 
-pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<BufReader<File>>>
+pub fn read_lines<P>(filename: P) -> io::Result<Lines<BufReader<File>>>
 where
     P: AsRef<Path>,
 {
