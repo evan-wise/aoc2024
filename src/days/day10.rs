@@ -20,16 +20,16 @@ impl Solution for Day10 {
                         trailheads.push((i, j));
                     }
                     i += 1;
-                },
+                }
                 '\n' => {
                     grid.push(row);
                     row = Vec::new();
                     i = 0;
                     j += 1;
-                },
+                }
                 _ => {
                     return Err(format!("invalid character {}", c).into());
-                },
+                }
             }
         }
         let map = Map::new(grid);
@@ -60,7 +60,11 @@ impl Map {
     fn new(grid: Vec<Vec<u32>>) -> Map {
         let height = grid.len() as i32;
         let width = if height > 0 { grid[0].len() } else { 0 } as i32;
-        Map { width, height, grid }
+        Map {
+            width,
+            height,
+            grid,
+        }
     }
 
     fn get_neighbors(&self, pos: (i32, i32)) -> Vec<(i32, i32)> {

@@ -1,7 +1,7 @@
 use std::num::ParseIntError;
 
-use crate::days::Solution;
 use crate::aoc::{read_chars, FileCharIterator};
+use crate::days::Solution;
 
 pub struct Day09;
 
@@ -11,10 +11,16 @@ impl Solution for Day09 {
         let blocks = parse_input(chars)?;
         let mut blocks1 = blocks.clone();
         compact_by_block(&mut blocks1);
-        println!("The checksum after compacting by blocks is: {}", compute_checksum(&blocks1));
+        println!(
+            "The checksum after compacting by blocks is: {}",
+            compute_checksum(&blocks1)
+        );
         let mut blocks2 = blocks.clone();
         compact_by_chunk(&mut blocks2);
-        println!("The checksum after compacting by chunks is: {}", compute_checksum(&blocks2));
+        println!(
+            "The checksum after compacting by chunks is: {}",
+            compute_checksum(&blocks2)
+        );
         Ok(())
     }
 }
@@ -118,14 +124,14 @@ fn find_file_chunk(blocks: &Vec<Block>, end: usize) -> Option<(usize, usize)> {
     let mut i = end;
     let mut j = end;
     let mut maybe_file_id: Option<usize> = None;
-    while let Block::Empty = blocks[i-1] {
+    while let Block::Empty = blocks[i - 1] {
         i -= 1;
         j -= 1;
         if i == 0 {
             break;
         }
     }
-    while let Block::File(id) = blocks[j-1] {
+    while let Block::File(id) = blocks[j - 1] {
         if let None = maybe_file_id {
             maybe_file_id = Some(id);
         }
@@ -135,7 +141,7 @@ fn find_file_chunk(blocks: &Vec<Block>, end: usize) -> Option<(usize, usize)> {
         if file_id != id {
             break;
         }
-        
+
         j -= 1;
         if j == 0 {
             break;
@@ -144,7 +150,7 @@ fn find_file_chunk(blocks: &Vec<Block>, end: usize) -> Option<(usize, usize)> {
     if i == 0 {
         return None;
     }
-    Some((j, i-j))
+    Some((j, i - j))
 }
 
 fn compute_checksum(blocks: &Vec<Block>) -> usize {

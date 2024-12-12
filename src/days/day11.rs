@@ -8,7 +8,10 @@ pub struct Day11;
 impl Solution for Day11 {
     fn solve(&self) -> Result<(), Box<dyn std::error::Error>> {
         let raw = read_to_string("./data/day11.txt")?;
-        let stones: Vec<u64> = raw.split_whitespace().map(|s| s.parse::<u64>().unwrap()).collect::<Vec<u64>>();
+        let stones: Vec<u64> = raw
+            .split_whitespace()
+            .map(|s| s.parse::<u64>().unwrap())
+            .collect::<Vec<u64>>();
         let mut stone_count_by_num = HashMap::new();
         for &stone in &stones {
             if let Some(&count) = stone_count_by_num.get(&stone) {
@@ -20,11 +23,17 @@ impl Solution for Day11 {
         for _ in 0..25 {
             stone_count_by_num = blink(&stone_count_by_num)?;
         }
-        println!("There are {} stone(s) after 25 blinks", get_total(&stone_count_by_num));
+        println!(
+            "There are {} stone(s) after 25 blinks",
+            get_total(&stone_count_by_num)
+        );
         for _ in 0..50 {
             stone_count_by_num = blink(&stone_count_by_num)?;
         }
-        println!("There are {} stone(s) after 75 blinks", get_total(&stone_count_by_num));
+        println!(
+            "There are {} stone(s) after 75 blinks",
+            get_total(&stone_count_by_num)
+        );
         Ok(())
     }
 }
@@ -52,7 +61,7 @@ fn blink(stone_count_by_num: &HashMap<u64, u64>) -> Result<HashMap<u64, u64>, Pa
                 } else {
                     vec![2024 * stone]
                 }
-            },
+            }
         };
         for &new_stone in &new_stones {
             if let Some(&count) = new.get(&new_stone) {

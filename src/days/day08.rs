@@ -20,17 +20,17 @@ impl Solution for Day08 {
                         antennas_by_freq.insert(c, antennas);
                     }
                     i += 1;
-                },
+                }
                 '.' => {
                     i += 1;
-                },
+                }
                 '\n' => {
                     if width == 0 {
                         width = i;
                     }
                     i = 0;
                     j += 1;
-                },
+                }
                 _ => return Err(format!("invalid char {}", c).into()),
             }
         }
