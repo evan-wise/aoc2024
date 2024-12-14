@@ -1,49 +1,92 @@
 use std::error::Error;
+use std::path::Path;
 
-use crate::days::Solution;
 use crate::aoc::read_lines;
+use crate::days::Solution;
 
 pub struct Day13;
 
 impl Solution for Day13 {
     fn solve(&self) -> Result<(), Box<dyn Error>> {
-        let mut claw_machines = Vec::new();
-        let mut maybe_button_a: Option<Button> = None;
-        let mut maybe_button_b: Option<Button> = None;
-        let mut maybe_prize: Option<Prize> = None;
-        let lines = read_lines("./examples/day13.txt")?;
-        for line in lines.flatten() {
-            if line == "" {
-                match (maybe_button_a, maybe_button_b, maybe_prize) {
-                    (Some(button_a), Some(button_b), Some(prize)) => {
-                        claw_machines.push(ClawMachine { button_a, button_b, prize });
-                    }
-                    _ => {
-                        return Err("invalid claw machine".into());
-                    }
+        let claw_machines = parse_input("./data/day13.txt")?;
+        let mut cost = 0;
+        for claw_machine in &claw_machines {
+            match solve_system(
+                claw_machine.button_a.x,
+                claw_machine.button_b.x,
+                claw_machine.button_a.y,
+                claw_machine.button_b.y,
+                claw_machine.prize.x,
+                claw_machine.prize.y,
+            ) {
+                DiophantineSolution::Unique(a, b) => {
+                    cost += 3 * a + b;
                 }
-                continue;
-            }
-
-            let parts = line.split(": ").collect::<Vec<&str>>();
-            match parts[0] {
-                "Button A" => {
-                    maybe_button_a = Some(Button::from(parts[1])?);
-                }
-                "Button B" => {
-                    maybe_button_b = Some(Button::from(parts[1])?);
-                }
-                "Prize" => {
-                    maybe_prize = Some(Prize::from(parts[1])?);
-                }
-                _ => {
-                    return Err("invalid line".into());
-                }
+                // Really we should handle this but it turns out there are none in the input
+                DiophantineSolution::Parametric(_, _, _, _) => (),
+                DiophantineSolution::None => (),
             }
         }
-        println!("{:?}", claw_machines);
+        println!("Part 1: {cost}");
         Ok(())
     }
+}
+
+fn parse_input<P: AsRef<Path>>(path: P) -> Result<Vec<ClawMachine>, Box<dyn Error>> {
+    let mut claw_machines = Vec::new();
+    let mut maybe_button_a: Option<Button> = None;
+    let mut maybe_button_b: Option<Button> = None;
+    let mut maybe_prize: Option<Prize> = None;
+    let lines = read_lines(path)?;
+    for line in lines.flatten() {
+        if line == "" {
+            match (maybe_button_a, maybe_button_b, maybe_prize) {
+                (Some(button_a), Some(button_b), Some(prize)) => {
+                    claw_machines.push(ClawMachine {
+                        button_a,
+                        button_b,
+                        prize,
+                    });
+                    maybe_button_a = None;
+                    maybe_button_b = None;
+                    maybe_prize = None;
+                }
+                _ => {
+                    return Err("invalid claw machine".into());
+                }
+            }
+            continue;
+        }
+
+        let parts = line.split(": ").collect::<Vec<&str>>();
+        match parts[0] {
+            "Button A" => {
+                maybe_button_a = Some(Button::parse(parts[1])?);
+            }
+            "Button B" => {
+                maybe_button_b = Some(Button::parse(parts[1])?);
+            }
+            "Prize" => {
+                maybe_prize = Some(Prize::parse(parts[1])?);
+            }
+            _ => {
+                return Err("invalid line".into());
+            }
+        }
+    }
+    match (maybe_button_a, maybe_button_b, maybe_prize) {
+        (Some(button_a), Some(button_b), Some(prize)) => {
+            claw_machines.push(ClawMachine {
+                button_a,
+                button_b,
+                prize,
+            });
+        }
+        _ => {
+            return Err("invalid claw machine".into());
+        }
+    }
+    Ok(claw_machines)
 }
 
 #[derive(Debug)]
@@ -60,7 +103,7 @@ struct Button {
 }
 
 impl Button {
-    fn from(raw: &str) -> Result<Button, Box<dyn Error>> {
+    fn parse(raw: &str) -> Result<Button, Box<dyn Error>> {
         let parts = raw.split(", ");
         let mut maybe_x: Option<i32> = None;
         let mut maybe_y: Option<i32> = None;
@@ -80,19 +123,19 @@ impl Button {
         }
         match (maybe_x, maybe_y) {
             (Some(x), Some(y)) => Ok(Button { x, y }),
-            _ => Err("invalid button".into())
+            _ => Err("invalid button".into()),
         }
     }
 }
 
 #[derive(Clone, Copy, Debug)]
 struct Prize {
-    x: i32, 
+    x: i32,
     y: i32,
 }
 
 impl Prize {
-    fn from(raw: &str) -> Result<Prize, Box<dyn Error>> {
+    fn parse(raw: &str) -> Result<Prize, Box<dyn Error>> {
         let parts = raw.split(", ");
         let mut maybe_x: Option<i32> = None;
         let mut maybe_y: Option<i32> = None;
@@ -112,7 +155,146 @@ impl Prize {
         }
         match (maybe_x, maybe_y) {
             (Some(x), Some(y)) => Ok(Prize { x, y }),
-            _ => Err("invalid prize".into())
+            _ => Err("invalid prize".into()),
         }
     }
+}
+
+fn gcd(a: i32, b: i32) -> (i32, i32, i32) {
+    if a == 0 {
+        return (b, 0, 1);
+    }
+    let (g, x1, y1) = gcd(b % a, a);
+    let x = y1 - (b / a) * x1;
+    let y = x1;
+
+    (g, x, y)
+}
+
+#[derive(Debug, PartialEq)]
+enum DiophantineSolution {
+    /// Single unique solution (x, y)
+    Unique(i32, i32),
+    /// Parametric solution (x0, y0, t, u) representing:
+    /// x = x0 + t * n
+    /// y = y0 + u * n
+    /// where n is any integer
+    Parametric(i32, i32, i32, i32),
+    /// No integer solutions exist
+    None,
+}
+
+fn solve_diophantine_eq(a: i32, b: i32, c: i32) -> DiophantineSolution {
+    if a == 0 && b == 0 {
+        if c == 0 {
+            return DiophantineSolution::Parametric(0, 0, 1, 1);
+        } else {
+            return DiophantineSolution::None;
+        }
+    }
+
+    if a == 0 {
+        if c % b == 0 {
+            return DiophantineSolution::Parametric(0, c / b, 1, 1);
+        } else {
+            return DiophantineSolution::None;
+        }
+    }
+
+    if b == 0 {
+        if c % a == 0 {
+            return DiophantineSolution::Parametric(c / a, 0, 1, 1);
+        } else {
+            return DiophantineSolution::None;
+        }
+    }
+
+    let (g, mut x0, mut y0) = gcd(a.abs(), b.abs());
+
+    if c % g != 0 {
+        return DiophantineSolution::None;
+    }
+
+    if a < 0 {
+        x0 = -x0;
+    }
+
+    if b < 0 {
+        y0 = -y0;
+    }
+
+    x0 = x0 * (c / g);
+    y0 = y0 * (c / g);
+
+    DiophantineSolution::Parametric(x0, y0, b / g, -a / g)
+}
+
+fn solve_system(a1: i32, b1: i32, a2: i32, b2: i32, c1: i32, c2: i32) -> DiophantineSolution {
+    let det = a1 * b2 - b1 * a2;
+    if det == 0 {
+        return handle_det_zero(a1, b1, a2, b2, c1, c2);
+    }
+
+    // Cramer's rule
+    let x_num = c1 * b2 - b1 * c2;
+    let y_num = a1 * c2 - c1 * a2;
+    if x_num % det != 0 || y_num % det != 0 {
+        return DiophantineSolution::None;
+    }
+    DiophantineSolution::Unique(x_num / det, y_num / det)
+}
+
+fn handle_det_zero(a1: i32, b1: i32, a2: i32, b2: i32, c1: i32, c2: i32) -> DiophantineSolution {
+    // All zeros case
+    if a1 == 0 && a2 == 0 && b1 == 0 && b2 == 0 {
+        return if c1 == 0 && c2 == 0 {
+            DiophantineSolution::Parametric(0, 0, 1, 1)
+        } else {
+            DiophantineSolution::None
+        };
+    }
+
+    // Only y
+    if a1 == 0 && a2 == 0 {
+        if b1 != 0 {
+            return if b1 * c2 == b2 * c1 && c1 % b1 == 0 {
+                DiophantineSolution::Parametric(0, 0, 1, c1 / b1)
+            } else {
+                DiophantineSolution::None
+            };
+        }
+
+        if b2 != 0 {
+            return if b1 * c2 == b2 * c1 && c2 % b2 == 0 {
+                DiophantineSolution::Parametric(0, 0, 1, c2 / b2)
+            } else {
+                DiophantineSolution::None
+            };
+        }
+    }
+
+    // Only x
+    if b1 == 0 && b2 == 0 {
+        if a1 != 0 {
+            return if a1 * c2 == a2 * c1 && c1 % a1 == 0 {
+                DiophantineSolution::Parametric(0, 0, c1 / a1, 1)
+            } else {
+                DiophantineSolution::None
+            };
+        }
+
+        if a2 != 0 {
+            return if a1 * c2 == a2 * c1 && c2 % a2 == 0 {
+                DiophantineSolution::Parametric(0, 0, c2 / a2, 1)
+            } else {
+                DiophantineSolution::None
+            };
+        }
+    }
+
+    // Check if equations are multiples of each other.
+    if a1 * b2 != a2 * b1 || a1 * c2 != a2 * c1 {
+        return DiophantineSolution::None;
+    }
+    return solve_diophantine_eq(a1, b1, c1);
 }
