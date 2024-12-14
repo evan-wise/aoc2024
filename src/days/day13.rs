@@ -8,26 +8,12 @@ pub struct Day13;
 
 impl Solution for Day13 {
     fn solve(&self) -> Result<(), Box<dyn Error>> {
-        let claw_machines = parse_input("./data/day13.txt")?;
-        let mut cost = 0;
-        for claw_machine in &claw_machines {
-            match solve_system(
-                claw_machine.button_a.x,
-                claw_machine.button_b.x,
-                claw_machine.button_a.y,
-                claw_machine.button_b.y,
-                claw_machine.prize.x,
-                claw_machine.prize.y,
-            ) {
-                DiophantineSolution::Unique(a, b) => {
-                    cost += 3 * a + b;
-                }
-                // Really we should handle this but it turns out there are none in the input
-                DiophantineSolution::Parametric(_, _, _, _) => (),
-                DiophantineSolution::None => (),
-            }
-        }
-        println!("Part 1: {cost}");
+        let mut claw_machines = parse_input("./data/day13.txt")?;
+        let cost1 = compute_cost(&claw_machines);
+        println!("Part 1: {cost1}");
+        rescale_prizes(&mut claw_machines);
+        let cost2 = compute_cost(&claw_machines);
+        println!("Part 1: {cost2}");
         Ok(())
     }
 }
@@ -89,6 +75,35 @@ fn parse_input<P: AsRef<Path>>(path: P) -> Result<Vec<ClawMachine>, Box<dyn Erro
     Ok(claw_machines)
 }
 
+fn compute_cost(claw_machines: &Vec<ClawMachine>) -> i64 {
+    let mut cost = 0;
+    for claw_machine in claw_machines {
+        match solve_system(
+            claw_machine.button_a.x,
+            claw_machine.button_b.x,
+            claw_machine.button_a.y,
+            claw_machine.button_b.y,
+            claw_machine.prize.x,
+            claw_machine.prize.y,
+        ) {
+            DiophantineSolution::Unique(a, b) => {
+                cost += 3 * a + b;
+            }
+            // Really we should handle this but it turns out there are none in the input
+            DiophantineSolution::Parametric(_, _, _, _) => (),
+            DiophantineSolution::None => (),
+        }
+    }
+    cost
+}
+
+fn rescale_prizes(claw_machines: &mut Vec<ClawMachine>) {
+    for claw_machine in claw_machines {
+        claw_machine.prize.x += 10000000000000;
+        claw_machine.prize.y += 10000000000000;
+    }
+}
+
 #[derive(Debug)]
 struct ClawMachine {
     button_a: Button,
@@ -98,23 +113,23 @@ struct ClawMachine {
 
 #[derive(Clone, Copy, Debug)]
 struct Button {
-    x: i32,
-    y: i32,
+    x: i64,
+    y: i64,
 }
 
 impl Button {
     fn parse(raw: &str) -> Result<Button, Box<dyn Error>> {
         let parts = raw.split(", ");
-        let mut maybe_x: Option<i32> = None;
-        let mut maybe_y: Option<i32> = None;
+        let mut maybe_x: Option<i64> = None;
+        let mut maybe_y: Option<i64> = None;
         for part in parts {
             let subparts = part.split("+").collect::<Vec<&str>>();
             match subparts[0] {
                 "X" => {
-                    maybe_x = Some(subparts[1].parse::<i32>()?);
+                    maybe_x = Some(subparts[1].parse::<i64>()?);
                 }
                 "Y" => {
-                    maybe_y = Some(subparts[1].parse::<i32>()?);
+                    maybe_y = Some(subparts[1].parse::<i64>()?);
                 }
                 _ => {
                     return Err("invalid button".into());
@@ -130,23 +145,23 @@ impl Button {
 
 #[derive(Clone, Copy, Debug)]
 struct Prize {
-    x: i32,
-    y: i32,
+    x: i64,
+    y: i64,
 }
 
 impl Prize {
     fn parse(raw: &str) -> Result<Prize, Box<dyn Error>> {
         let parts = raw.split(", ");
-        let mut maybe_x: Option<i32> = None;
-        let mut maybe_y: Option<i32> = None;
+        let mut maybe_x: Option<i64> = None;
+        let mut maybe_y: Option<i64> = None;
         for part in parts {
             let subparts = part.split("=").collect::<Vec<&str>>();
             match subparts[0] {
                 "X" => {
-                    maybe_x = Some(subparts[1].parse::<i32>()?);
+                    maybe_x = Some(subparts[1].parse::<i64>()?);
                 }
                 "Y" => {
-                    maybe_y = Some(subparts[1].parse::<i32>()?);
+                    maybe_y = Some(subparts[1].parse::<i64>()?);
                 }
                 _ => {
                     return Err("invalid prize".into());
@@ -160,7 +175,7 @@ impl Prize {
     }
 }
 
-fn gcd(a: i32, b: i32) -> (i32, i32, i32) {
+fn gcd(a: i64, b: i64) -> (i64, i64, i64) {
     if a == 0 {
         return (b, 0, 1);
     }
@@ -174,17 +189,17 @@ fn gcd(a: i32, b: i32) -> (i32, i32, i32) {
 #[derive(Debug, PartialEq)]
 enum DiophantineSolution {
     /// Single unique solution (x, y)
-    Unique(i32, i32),
+    Unique(i64, i64),
     /// Parametric solution (x0, y0, t, u) representing:
     /// x = x0 + t * n
     /// y = y0 + u * n
     /// where n is any integer
-    Parametric(i32, i32, i32, i32),
+    Parametric(i64, i64, i64, i64),
     /// No integer solutions exist
     None,
 }
 
-fn solve_diophantine_eq(a: i32, b: i32, c: i32) -> DiophantineSolution {
+fn solve_diophantine_eq(a: i64, b: i64, c: i64) -> DiophantineSolution {
     if a == 0 && b == 0 {
         if c == 0 {
             return DiophantineSolution::Parametric(0, 0, 1, 1);
@@ -229,7 +244,7 @@ fn solve_diophantine_eq(a: i32, b: i32, c: i32) -> DiophantineSolution {
     DiophantineSolution::Parametric(x0, y0, b / g, -a / g)
 }
 
-fn solve_system(a1: i32, b1: i32, a2: i32, b2: i32, c1: i32, c2: i32) -> DiophantineSolution {
+fn solve_system(a1: i64, b1: i64, a2: i64, b2: i64, c1: i64, c2: i64) -> DiophantineSolution {
     let det = a1 * b2 - b1 * a2;
     if det == 0 {
         return handle_det_zero(a1, b1, a2, b2, c1, c2);
@@ -244,7 +259,7 @@ fn solve_system(a1: i32, b1: i32, a2: i32, b2: i32, c1: i32, c2: i32) -> Diophan
     DiophantineSolution::Unique(x_num / det, y_num / det)
 }
 
-fn handle_det_zero(a1: i32, b1: i32, a2: i32, b2: i32, c1: i32, c2: i32) -> DiophantineSolution {
+fn handle_det_zero(a1: i64, b1: i64, a2: i64, b2: i64, c1: i64, c2: i64) -> DiophantineSolution {
     // All zeros case
     if a1 == 0 && a2 == 0 && b1 == 0 && b2 == 0 {
         return if c1 == 0 && c2 == 0 {
