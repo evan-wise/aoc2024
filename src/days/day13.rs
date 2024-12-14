@@ -13,7 +13,7 @@ impl Solution for Day13 {
         println!("Part 1: {cost1}");
         rescale_prizes(&mut claw_machines);
         let cost2 = compute_cost(&claw_machines);
-        println!("Part 1: {cost2}");
+        println!("Part 2: {cost2}");
         Ok(())
     }
 }
