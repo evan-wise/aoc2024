@@ -1,7 +1,8 @@
 use crate::days::Solution;
 use crate::aoc::read_lines;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
+use std::hash::Hash;
 use std::path::Path;
 
 pub struct Day14;
@@ -27,6 +28,14 @@ impl Solution for Day14 {
             }
         }
         println!("Part 1: {safety_score}");
+        let mut num_seconds = 1;
+        loop {
+            if no_dupes(robots.iter().map(|r| r.final_pos(num_seconds, dim))) {
+                break;
+            }
+            num_seconds += 1;
+        }
+        println!("Part 2: {num_seconds}");
         Ok(())
     }
 }
@@ -116,3 +125,11 @@ impl Quadrant {
     }
 }
 
+fn no_dupes<T>(iter: T) -> bool
+where
+    T: IntoIterator,
+    T::Item: Eq + Hash,
+{
+    let mut uniq = HashSet::new();
+    iter.into_iter().all(move |x| uniq.insert(x))
+}
