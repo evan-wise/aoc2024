@@ -1,5 +1,5 @@
-use crate::days::Solution;
 use crate::aoc::read_lines;
+use crate::days::Solution;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::hash::Hash;
@@ -63,7 +63,7 @@ fn parse_position(raw: &str) -> Result<(i32, i32), Box<dyn Error>> {
             if subparts.len() != 2 {
                 return Err("invalid position".into());
             }
-            Ok((subparts[0].parse::<i32>()?, subparts[1].parse::<i32>()?)) 
+            Ok((subparts[0].parse::<i32>()?, subparts[1].parse::<i32>()?))
         }
         _ => Err("invalid position".into()),
     }
@@ -77,7 +77,7 @@ fn parse_velocity(raw: &str) -> Result<(i32, i32), Box<dyn Error>> {
             if subparts.len() != 2 {
                 return Err("invalid velocity".into());
             }
-            Ok((subparts[0].parse::<i32>()?, subparts[1].parse::<i32>()?)) 
+            Ok((subparts[0].parse::<i32>()?, subparts[1].parse::<i32>()?))
         }
         _ => Err("invalid velocity".into()),
     }
