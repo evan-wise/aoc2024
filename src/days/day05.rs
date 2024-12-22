@@ -1,5 +1,4 @@
-use crate::aoc::read_lines;
-use crate::days::Solution;
+use crate::aoc::{read_lines, Solution};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;

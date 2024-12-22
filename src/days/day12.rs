@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 
-use crate::aoc::read_lines;
-use crate::days::Solution;
+use crate::aoc::{read_lines, Solution};
 
 pub struct Day12;
 

@@ -1,5 +1,4 @@
-use crate::aoc::read_chars;
-use crate::days::Solution;
+use crate::aoc::{read_chars, Solution};
 use std::collections::HashSet;
 
 pub struct Day10;

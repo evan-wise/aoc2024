@@ -1,7 +1,6 @@
 use std::num::ParseIntError;
 
-use crate::aoc::{read_chars, FileCharIterator};
-use crate::days::Solution;
+use crate::aoc::{read_chars, FileCharIterator, Solution};
 
 pub struct Day09;
 

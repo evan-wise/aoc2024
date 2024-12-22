@@ -1,6 +1,11 @@
+use std::error::Error;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines, Read};
 use std::path::Path;
+
+pub trait Solution {
+    fn solve(&self) -> Result<(), Box<dyn Error>>;
+}
 
 pub struct FileCharIterator {
     reader: BufReader<File>,

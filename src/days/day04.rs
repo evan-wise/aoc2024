@@ -1,5 +1,4 @@
-use crate::aoc::read_lines;
-use crate::days::Solution;
+use crate::aoc::{read_lines, Solution};
 use std::error::Error;
 
 pub struct Day04;

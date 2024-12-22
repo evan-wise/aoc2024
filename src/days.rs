@@ -14,13 +14,7 @@ pub mod day13;
 pub mod day14;
 pub mod day15;
 
-use std::error::Error;
-
-pub trait Solution {
-    fn solve(&self) -> Result<(), Box<dyn Error>>;
-}
-
-pub fn solutions() -> Vec<Box<dyn Solution>> {
+pub fn solutions() -> Vec<Box<dyn crate::aoc::Solution>> {
     vec![
         Box::new(day01::Day01 {}),
         Box::new(day02::Day02 {}),

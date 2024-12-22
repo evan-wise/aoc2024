@@ -1,8 +1,7 @@
 use std::error::Error;
 use std::path::Path;
 
-use crate::aoc::read_lines;
-use crate::days::Solution;
+use crate::aoc::{read_lines, Solution};
 
 pub struct Day13;
 
