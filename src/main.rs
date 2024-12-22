@@ -1,6 +1,7 @@
 mod aoc;
 mod days;
 
+use crate::aoc::Solution;
 use crate::days::*;
 use std::env;
 use std::error::Error;
