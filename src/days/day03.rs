@@ -1,19 +1,14 @@
-use crate::aoc::{read_chars, Solution};
+use crate::aoc::{read_chars, Solution, SolutionParts};
 use std::error::Error;
 
 pub struct Day03;
 
 impl Solution for Day03 {
-    fn solve(&self) -> Result<(), Box<dyn Error>> {
-        println!(
-            "The sum total of all the multiplications is: {}",
-            compute_total(false)?
-        );
-        println!(
-            "The sum total of all the multiplications if conditionals are handled is: {}",
-            compute_total(true)?
-        );
-        Ok(())
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+        Ok((
+            Some(compute_total(false)?.to_string()),
+            Some(compute_total(true)?.to_string()),
+        ))
     }
 }
 

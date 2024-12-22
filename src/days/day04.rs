@@ -1,14 +1,14 @@
-use crate::aoc::{read_lines, Solution};
+use crate::aoc::{read_lines, Solution, SolutionParts};
 use std::error::Error;
 
 pub struct Day04;
 
 impl Solution for Day04 {
-    fn solve(&self) -> Result<(), Box<dyn Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+        let mut xmas_total = 0;
+        let mut cross_total = 0;
         if let Ok(lines) = read_lines("./data/day04.txt") {
             let wordsearch: Vec<Vec<u8>> = lines.flatten().map(|s| s.into_bytes()).collect();
-            let mut xmas_total = 0;
-            let mut cross_total = 0;
             for (i, s) in wordsearch.iter().enumerate() {
                 for (j, _c) in s.iter().enumerate() {
                     xmas_total += count_xmas(i, j, &wordsearch);
@@ -17,10 +17,8 @@ impl Solution for Day04 {
                     }
                 }
             }
-            println!("The word \"XMAS\" appears {} time(s).", xmas_total);
-            println!("The \"X-MAS\"es appears {} time(s).", cross_total);
         }
-        Ok(())
+        Ok((Some(xmas_total.to_string()), Some(cross_total.to_string())))
     }
 }
 

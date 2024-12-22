@@ -1,11 +1,11 @@
-use crate::aoc::{read_lines, Solution};
+use crate::aoc::{read_lines, Solution, SolutionParts};
 use std::collections::HashMap;
 use std::error::Error;
 
 pub struct Day01;
 
 impl Solution for Day01 {
-    fn solve(&self) -> Result<(), Box<dyn Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let mut list1 = vec![0; 1000];
         let mut list2 = vec![0; 1000];
         if let Ok(lines) = read_lines("./data/day01.txt") {
@@ -22,11 +22,10 @@ impl Solution for Day01 {
         list1.sort();
         list2.sort();
 
-        let mut sum = 0;
+        let mut total_distance = 0;
         for (l, r) in list1.iter().zip(list2.iter()) {
-            sum += (l - r).abs();
+            total_distance += (l - r).abs();
         }
-        println!("The total distance is: {}", sum);
 
         let mut cum_score = 0;
         let mut score_by_id = HashMap::new();
@@ -45,8 +44,10 @@ impl Solution for Day01 {
                 cum_score += score;
             }
         }
-        println!("The similarity score is: {}", cum_score);
 
-        Ok(())
+        Ok((
+            Some(total_distance.to_string()),
+            Some(cum_score.to_string()),
+        ))
     }
 }

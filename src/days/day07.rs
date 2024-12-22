@@ -1,10 +1,10 @@
-use crate::aoc::{read_lines, Solution};
+use crate::aoc::{read_lines, Solution, SolutionParts};
 use std::error::Error;
 
 pub struct Day07;
 
 impl Solution for Day07 {
-    fn solve(&self) -> Result<(), Box<dyn Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let mut total = 0;
         let mut total_with_concat = 0;
         let lines = read_lines("./data/day07.txt")?;
@@ -25,12 +25,7 @@ impl Solution for Day07 {
                 total_with_concat += test_val;
             }
         }
-        println!("The total calibration result is: {}", total);
-        println!(
-            "The total calibration result (allowing for concatenation) is: {}",
-            total_with_concat
-        );
-        Ok(())
+        Ok((Some(total.to_string()), Some(total_with_concat.to_string())))
     }
 }
 

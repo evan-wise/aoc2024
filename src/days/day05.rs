@@ -1,4 +1,4 @@
-use crate::aoc::{read_lines, Solution};
+use crate::aoc::{read_lines, Solution, SolutionParts};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;
@@ -6,7 +6,7 @@ use std::error::Error;
 pub struct Day05;
 
 impl Solution for Day05 {
-    fn solve(&self) -> Result<(), Box<dyn Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let mut rules: HashMap<String, Vec<String>> = HashMap::new();
         let mut correct_total = 0;
         let mut corrected_total = 0;
@@ -68,14 +68,9 @@ impl Solution for Day05 {
                 }
             }
         }
-        println!(
-            "The sum of the middle values of the already correct updates is: {}",
-            correct_total
-        );
-        println!(
-            "The sum of the middle values of the corrected updates is: {}",
-            corrected_total
-        );
-        Ok(())
+        Ok((
+            Some(correct_total.to_string()),
+            Some(corrected_total.to_string()),
+        ))
     }
 }

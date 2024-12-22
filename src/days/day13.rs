@@ -1,19 +1,16 @@
+use crate::aoc::{read_lines, Solution, SolutionParts};
 use std::error::Error;
 use std::path::Path;
-
-use crate::aoc::{read_lines, Solution};
 
 pub struct Day13;
 
 impl Solution for Day13 {
-    fn solve(&self) -> Result<(), Box<dyn Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let mut claw_machines = parse_input("./data/day13.txt")?;
         let cost1 = compute_cost(&claw_machines);
-        println!("Part 1: {cost1}");
         rescale_prizes(&mut claw_machines);
         let cost2 = compute_cost(&claw_machines);
-        println!("Part 2: {cost2}");
-        Ok(())
+        Ok((Some(cost1.to_string()), Some(cost2.to_string())))
     }
 }
 

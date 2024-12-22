@@ -3,8 +3,10 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines, Read};
 use std::path::Path;
 
+pub type SolutionParts = (Option<String>, Option<String>);
+
 pub trait Solution {
-    fn solve(&self) -> Result<(), Box<dyn Error>>;
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>>;
 }
 
 pub struct FileCharIterator {

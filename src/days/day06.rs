@@ -1,20 +1,19 @@
-use crate::aoc::{read_chars, FileCharIterator, Solution};
+use crate::aoc::{read_chars, FileCharIterator, Solution, SolutionParts};
 use std::collections::HashSet;
 use std::error::Error;
 
 pub struct Day06;
 
 impl Solution for Day06 {
-    fn solve(&self) -> Result<(), Box<dyn Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let chars = read_chars("./data/day06.txt")?;
 
         let mut state = parse_input(chars)?;
 
-        do_part1(&mut state)?;
-
-        do_part2(&state)?;
-
-        Ok(())
+        Ok((
+            Some(do_part1(&mut state)?.to_string()),
+            Some(do_part2(&state)?.to_string()),
+        ))
     }
 }
 
@@ -204,7 +203,7 @@ fn parse_input(chars: FileCharIterator) -> Result<State, Box<dyn Error>> {
     Ok(state)
 }
 
-fn do_part1(state: &mut State) -> Result<(), Box<dyn Error>> {
+fn do_part1(state: &mut State) -> Result<i32, Box<dyn Error>> {
     let mut num_positions = 1;
     loop {
         match state.do_step() {
@@ -216,11 +215,10 @@ fn do_part1(state: &mut State) -> Result<(), Box<dyn Error>> {
             Err(_) => break,
         }
     }
-    println!("The guard visits {} position(s) on the map.", num_positions);
-    Ok(())
+    Ok(num_positions)
 }
 
-fn do_part2(state: &State) -> Result<(), Box<dyn Error>> {
+fn do_part2(state: &State) -> Result<usize, Box<dyn Error>> {
     let mut loops = HashSet::new();
     let (_, history) = state.history().split_last().unwrap();
     for guard in history {
@@ -254,6 +252,5 @@ fn do_part2(state: &State) -> Result<(), Box<dyn Error>> {
             }
         }
     }
-    println!("{} loop(s) found.", loops.len());
-    Ok(())
+    Ok(loops.len())
 }

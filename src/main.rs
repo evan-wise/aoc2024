@@ -47,6 +47,13 @@ fn parse_args() -> Result<Option<usize>, Box<dyn Error>> {
 
 fn run_solution(solution: &Box<dyn Solution>) -> Result<Duration, Box<dyn Error>> {
     let timer = Instant::now();
-    solution.solve()?;
-    Ok(timer.elapsed())
+    let (maybe_part1, maybe_part2) = solution.solve()?;
+    let elapsed = timer.elapsed();
+    if let Some(part1) = maybe_part1 {
+        println!("Part 1: {part1}");
+    }
+    if let Some(part2) = maybe_part2 {
+        println!("Part 2: {part2}");
+    }
+    Ok(elapsed)
 }

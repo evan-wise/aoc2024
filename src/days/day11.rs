@@ -1,12 +1,13 @@
-use crate::aoc::Solution;
+use crate::aoc::{Solution, SolutionParts};
 use std::collections::HashMap;
+use std::error::Error;
 use std::fs::read_to_string;
 use std::num::ParseIntError;
 
 pub struct Day11;
 
 impl Solution for Day11 {
-    fn solve(&self) -> Result<(), Box<dyn std::error::Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let raw = read_to_string("./data/day11.txt")?;
         let stones: Vec<u64> = raw
             .split_whitespace()
@@ -23,18 +24,12 @@ impl Solution for Day11 {
         for _ in 0..25 {
             stone_count_by_num = blink(&stone_count_by_num)?;
         }
-        println!(
-            "There are {} stone(s) after 25 blinks",
-            get_total(&stone_count_by_num)
-        );
+        let total1 = get_total(&stone_count_by_num);
         for _ in 0..50 {
             stone_count_by_num = blink(&stone_count_by_num)?;
         }
-        println!(
-            "There are {} stone(s) after 75 blinks",
-            get_total(&stone_count_by_num)
-        );
-        Ok(())
+        let total2 = get_total(&stone_count_by_num);
+        Ok((Some(total1.to_string()), Some(total2.to_string())))
     }
 }
 

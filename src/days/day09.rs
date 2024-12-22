@@ -1,26 +1,20 @@
+use crate::aoc::{read_chars, FileCharIterator, Solution, SolutionParts};
+use std::error::Error;
 use std::num::ParseIntError;
-
-use crate::aoc::{read_chars, FileCharIterator, Solution};
 
 pub struct Day09;
 
 impl Solution for Day09 {
-    fn solve(&self) -> Result<(), Box<dyn std::error::Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let chars = read_chars("./data/day09.txt")?;
         let blocks = parse_input(chars)?;
         let mut blocks1 = blocks.clone();
         compact_by_block(&mut blocks1);
-        println!(
-            "The checksum after compacting by blocks is: {}",
-            compute_checksum(&blocks1)
-        );
+        let checksum1 = compute_checksum(&blocks1);
         let mut blocks2 = blocks.clone();
         compact_by_chunk(&mut blocks2);
-        println!(
-            "The checksum after compacting by chunks is: {}",
-            compute_checksum(&blocks2)
-        );
-        Ok(())
+        let checksum2 = compute_checksum(&blocks2);
+        Ok((Some(checksum1.to_string()), Some(checksum2.to_string())))
     }
 }
 

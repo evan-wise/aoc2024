@@ -1,11 +1,11 @@
-use crate::aoc::{read_lines, Solution};
+use crate::aoc::{read_lines, Solution, SolutionParts};
 use std::error::Error;
 use std::num::ParseIntError;
 
 pub struct Day02;
 
 impl Solution for Day02 {
-    fn solve(&self) -> Result<(), Box<dyn Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let mut count = 0;
         let mut dampener_count = 0;
         if let Ok(lines) = read_lines("./data/day02.txt") {
@@ -25,12 +25,7 @@ impl Solution for Day02 {
                 }
             }
         }
-        println!("There are {} safe reports.", count);
-        println!(
-            "There are {} safe reports with the problem dampener.",
-            dampener_count
-        );
-        Ok(())
+        Ok((Some(count.to_string()), Some(dampener_count.to_string())))
     }
 }
 

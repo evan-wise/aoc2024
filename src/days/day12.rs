@@ -1,11 +1,11 @@
+use crate::aoc::{read_lines, Solution, SolutionParts};
 use std::collections::HashSet;
-
-use crate::aoc::{read_lines, Solution};
+use std::error::Error;
 
 pub struct Day12;
 
 impl Solution for Day12 {
-    fn solve(&self) -> Result<(), Box<dyn std::error::Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let lines = read_lines("./data/day12.txt")?;
         let grid = lines
             .flatten()
@@ -29,16 +29,14 @@ impl Solution for Day12 {
         for region in &regions {
             total_cost += (region.plots.len() as i32) * region.perimeter;
         }
-        println!("The total cost for all the plots is: {}", total_cost);
         let mut discount_cost = 0;
         for region in &regions {
             discount_cost += (region.plots.len() as i32) * region.count_sides();
         }
-        println!(
-            "The discounted cost for all the plots is: {}",
-            discount_cost
-        );
-        Ok(())
+        Ok((
+            Some(total_cost.to_string()),
+            Some(discount_cost.to_string()),
+        ))
     }
 }
 

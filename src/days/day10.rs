@@ -1,10 +1,11 @@
-use crate::aoc::{read_chars, Solution};
+use crate::aoc::{read_chars, Solution, SolutionParts};
 use std::collections::HashSet;
+use std::error::Error;
 
 pub struct Day10;
 
 impl Solution for Day10 {
-    fn solve(&self) -> Result<(), Box<dyn std::error::Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let chars = read_chars("./data/day10.txt")?;
         let mut i = 0;
         let mut j = 0;
@@ -31,6 +32,7 @@ impl Solution for Day10 {
                 }
             }
         }
+
         let map = Map::new(grid);
         let mut score = 0;
         for trailhead in &trailheads {
@@ -38,14 +40,13 @@ impl Solution for Day10 {
             map.find_summits(*trailhead, &mut summits);
             score += summits.len();
         }
-        println!("The total score for all the trailheads is: {}", score);
 
         let mut rating = 0;
         for trailhead in &trailheads {
             rating += map.compute_rating(*trailhead);
         }
-        println!("The sum of all the ratings is: {}", rating);
-        Ok(())
+
+        Ok((Some(score.to_string()), Some(rating.to_string())))
     }
 }
 

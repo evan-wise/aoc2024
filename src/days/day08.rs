@@ -1,10 +1,11 @@
-use crate::aoc::{read_chars, Solution};
+use crate::aoc::{read_chars, Solution, SolutionParts};
 use std::collections::{HashMap, HashSet};
+use std::error::Error;
 
 pub struct Day08;
 
 impl Solution for Day08 {
-    fn solve(&self) -> Result<(), Box<dyn std::error::Error>> {
+    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let mut antennas_by_freq: HashMap<char, Vec<Antenna>> = HashMap::new();
         let mut i = 0;
         let mut j = 0;
@@ -47,10 +48,11 @@ impl Solution for Day08 {
                 }
             }
         }
-        println!("Antinodes: {}", antinodes.len());
-        println!("Harmonic antinodes: {}", harmonic_antinodes.len());
 
-        Ok(())
+        Ok((
+            Some(antinodes.len().to_string()),
+            Some(harmonic_antinodes.len().to_string()),
+        ))
     }
 }
 
