@@ -9,7 +9,9 @@ impl Solution for Day17 {
     fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let mut computer = parse_input("./data/day17.txt")?;
         let output = computer.run()?;
-        Ok((Some(output), None))
+        let output_str = output.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+        let quine_a = backtrack(&computer)?.to_string();
+        Ok((Some(output_str), Some(quine_a)))
     }
 }
 
@@ -25,9 +27,9 @@ fn parse_input<P: AsRef<Path>>(filename: P) -> Result<Computer, Box<dyn Error>> 
             return Err("invalid line".into());
         }
         match parts[0] {
-            "Register A" => computer.a = parts[1].parse::<u32>()?,
-            "Register B" => computer.b = parts[1].parse::<u32>()?,
-            "Register C" => computer.c = parts[1].parse::<u32>()?,
+            "Register A" => computer.a = parts[1].parse::<u128>()?,
+            "Register B" => computer.b = parts[1].parse::<u128>()?,
+            "Register C" => computer.c = parts[1].parse::<u128>()?,
             "Program" => computer.instructions = parts[1].split(",").map(|i| i.parse::<u8>()).collect::<Result<Vec<u8>, ParseIntError>>()?,
             _ => {
                 return Err("invalid line".into());
@@ -37,11 +39,46 @@ fn parse_input<P: AsRef<Path>>(filename: P) -> Result<Computer, Box<dyn Error>> 
     Ok(computer)
 }
 
-#[derive(Debug)]
+// Explanation:
+// This may not work for a general program but:
+//   1) From the construction of the problem, we know that the program halts and thus that register
+//      A is 0 after the final iteration.
+//   2) From inspection, the input programs always end with a jump to 0.
+//   3) From inspection, the state of registers B and C depends only on the current value of
+//      register A, so we don't have to bother tracking this between iterations.
+// Register A must encode the instructions as outputs in some way, thus we must consume 3 bits of
+// register A during each iteration of the loop. If we know the final value of A after the
+// computation, we can try every 3 bit suffix for that value until we find the one that outputs the
+// previous value in the instructions.
+fn backtrack(computer: &Computer) -> Result<u128, String> {
+    let mut no_jump = computer.clone();
+    no_jump.instructions.pop();
+    no_jump.instructions.pop();
+    let mut stack = vec![(0, computer.instructions.len() - 1)];
+    let mut final_a = 0;
+    while let Some((a, i)) = stack.pop() {
+        for suffix in 0..8 {
+            let test_a = (a << 3) | suffix;
+            no_jump.a = test_a;
+            no_jump.instruction_pointer = 0;
+            let output = no_jump.run()?[0];
+            if output == computer.instructions[i] {
+                if i == 0 {
+                    final_a = test_a;
+                } else {
+                    stack.push((test_a, i - 1));
+                }
+            }
+        }
+    }
+    Ok(final_a)
+}
+
+#[derive(Clone, Debug)]
 struct Computer {
-    a: u32,
-    b: u32,
-    c: u32,
+    a: u128,
+    b: u128,
+    c: u128,
     instructions: Vec<u8>,
     instruction_pointer: usize,
 }
@@ -57,7 +94,7 @@ impl Computer {
         }
     }
 
-    fn run(&mut self) -> Result<String, String> {
+    fn run(&mut self) -> Result<Vec<u8>, String> {
         let mut output = Vec::new();
         let num_instructions = self.instructions.len();
         while self.instruction_pointer < num_instructions {
@@ -65,11 +102,10 @@ impl Computer {
             let operand = self.instructions[self.instruction_pointer+1];
             match opcode {
                 0 => {
-                    let divisor = (2 as u32).pow(self.combo(operand)?);
-                    self.a /= divisor;
+                    self.a >>= self.combo(operand)?;
                 }
                 1 => {
-                    self.b ^= operand as u32;
+                    self.b ^= operand as u128;
                 }
                 2 => {
                     self.b = self.combo(operand)? % 8;
@@ -84,15 +120,13 @@ impl Computer {
                     self.b = self.b ^ self.c;
                 }
                 5 => {
-                    output.push((self.combo(operand)? % 8).to_string());
+                    output.push((self.combo(operand)? % 8) as u8);
                 }
                 6 => {
-                    let divisor = (2 as u32).pow(self.combo(operand)?);
-                    self.b = self.a / divisor;
+                    self.b = self.a >> self.combo(operand)?;
                 }
                 7 => {
-                    let divisor = (2 as u32).pow(self.combo(operand)?);
-                    self.c = self.a / divisor;
+                    self.c = self.a >> self.combo(operand)?;
                 }
                 _ => {
                     return Err(format!("invalid opcode {opcode}"));
@@ -100,10 +134,10 @@ impl Computer {
             }
             self.instruction_pointer += 2;
         }
-        Ok(output.join(","))
+        Ok(output)
     }
 
-    fn combo(&self, operand: u8) -> Result<u32, String> {
+    fn combo(&self, operand: u8) -> Result<u128, String> {
         Ok(match operand {
             0 => 0,
             1 => 1,
