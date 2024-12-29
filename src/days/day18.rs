@@ -1,4 +1,4 @@
-use crate::aoc::{read_lines, Direction, Map, Position, Solution, SolutionParts};
+use crate::aoc::{read_lines, Direction, Map, MapDisplay, Position, Solution, SolutionParts};
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::error::Error;
@@ -13,6 +13,7 @@ impl Solution for Day18 {
         for i in 0..num_bytes {
             map.corrupted.insert(bytes[i]);
         }
+        println!("{}", MapDisplay(&map));
         let dist = minimal_path(&map).to_string();
         Ok((Some(dist), None))
     }
@@ -56,7 +57,7 @@ fn minimal_path(map: &Day18Map) -> usize {
 
         if dist >= prev_dist {
             continue;
-        } 
+        }
         low_dists.insert(pos, dist);
         if !visited.insert(pos) {
             continue;
@@ -65,7 +66,7 @@ fn minimal_path(map: &Day18Map) -> usize {
             continue;
         }
         for d in Direction::all() {
-            if let Some(((x, y), State::Safe)) = d.go(map, pos) {
+            if let Some(((x, y), Cell::Safe)) = d.go(map, pos) {
                 heap.push((Reverse(dist + 1), (x, y)));
             }
         }
@@ -80,7 +81,8 @@ struct Day18Map {
     corrupted: HashSet<Position>,
 }
 
-impl Map<State> for Day18Map {
+impl Map for Day18Map {
+    type Cell = Cell;
     fn width(&self) -> usize {
         self.width
     }
@@ -89,15 +91,15 @@ impl Map<State> for Day18Map {
         self.height
     }
 
-    fn get(&self, pos: Position) -> Option<State> {
+    fn get(&self, pos: Position) -> Option<Cell> {
         let (x, y) = pos;
         if x >= self.width || y >= self.height {
             return None;
         }
         if self.corrupted.contains(&pos) {
-            Some(State::Corrupted)
+            Some(Cell::Corrupted)
         } else {
-            Some(State::Safe)
+            Some(Cell::Safe)
         }
     }
 }
@@ -112,27 +114,13 @@ impl Day18Map {
     }
 }
 
-impl Display for Day18Map {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        for y in 0..self.height {
-            for x in 0..self.width {
-                write!(f, "{}", self.get((x, y)).unwrap())?;
-            }
-            if y != self.height - 1 {
-                write!(f, "\n")?;
-            }
-        }
-        Ok(())
-    }
-}
-
 #[derive(Debug)]
-enum State {
+enum Cell {
     Safe,
     Corrupted,
 }
 
-impl Display for State {
+impl Display for Cell {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Safe => write!(f, "."),

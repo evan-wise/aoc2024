@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::fmt::Display;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines, Read};
 use std::path::Path;
@@ -82,7 +83,7 @@ impl Direction {
         }
     }
 
-    pub fn go<T, U: Map<T>>(&self, map: &U, pos: Position) -> Option<(Position, T)> {
+    pub fn go<T: Map>(&self, map: &T, pos: Position) -> Option<(Position, T::Cell)> {
         let (x, y) = pos;
         let width = map.width();
         let height = map.height();
@@ -119,8 +120,27 @@ impl Direction {
     }
 }
 
-pub trait Map<T> {
+pub trait Map {
+    type Cell: Display;
     fn width(&self) -> usize;
     fn height(&self) -> usize;
-    fn get(&self, pos: Position) -> Option<T>;
+    fn get(&self, pos: Position) -> Option<Self::Cell>;
+}
+
+pub struct MapDisplay<'a, T: Map>(pub &'a T);
+
+impl<'a, T: Map> Display for MapDisplay<'a, T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let height = self.0.height();
+        let width = self.0.width();
+        for y in 0..height {
+            for x in 0..width {
+                write!(f, "{}", self.0.get((x, y)).unwrap())?;
+            }
+            if y != height - 1 {
+                write!(f, "\n")?;
+            }
+        }
+        Ok(())
+    }
 }
