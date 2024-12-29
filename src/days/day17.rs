@@ -9,7 +9,11 @@ impl Solution for Day17 {
     fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
         let mut computer = parse_input("./data/day17.txt")?;
         let output = computer.run()?;
-        let output_str = output.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",");
+        let output_str = output
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
         let quine_a = backtrack(&computer)?.to_string();
         Ok((Some(output_str), Some(quine_a)))
     }
@@ -30,7 +34,12 @@ fn parse_input<P: AsRef<Path>>(filename: P) -> Result<Computer, Box<dyn Error>> 
             "Register A" => computer.a = parts[1].parse::<u128>()?,
             "Register B" => computer.b = parts[1].parse::<u128>()?,
             "Register C" => computer.c = parts[1].parse::<u128>()?,
-            "Program" => computer.instructions = parts[1].split(",").map(|i| i.parse::<u8>()).collect::<Result<Vec<u8>, ParseIntError>>()?,
+            "Program" => {
+                computer.instructions = parts[1]
+                    .split(",")
+                    .map(|i| i.parse::<u8>())
+                    .collect::<Result<Vec<u8>, ParseIntError>>()?
+            }
             _ => {
                 return Err("invalid line".into());
             }
@@ -99,7 +108,7 @@ impl Computer {
         let num_instructions = self.instructions.len();
         while self.instruction_pointer < num_instructions {
             let opcode = self.instructions[self.instruction_pointer];
-            let operand = self.instructions[self.instruction_pointer+1];
+            let operand = self.instructions[self.instruction_pointer + 1];
             match opcode {
                 0 => {
                     self.a >>= self.combo(operand)?;
@@ -114,7 +123,7 @@ impl Computer {
                     if self.a != 0 {
                         self.instruction_pointer = operand as usize;
                         continue;
-                    } 
+                    }
                 }
                 4 => {
                     self.b = self.b ^ self.c;
@@ -152,4 +161,3 @@ impl Computer {
         })
     }
 }
-

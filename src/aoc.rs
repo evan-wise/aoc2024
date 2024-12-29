@@ -60,6 +60,10 @@ pub enum Direction {
 }
 
 impl Direction {
+    pub fn all() -> [Direction; 4] {
+        [Self::Up, Self::Down, Self::Left, Self::Right]
+    }
+
     pub fn right(&self) -> Direction {
         match self {
             Self::Up => Self::Right,
@@ -77,4 +81,46 @@ impl Direction {
             Self::Right => Self::Up,
         }
     }
+
+    pub fn go<T, U: Map<T>>(&self, map: &U, pos: Position) -> Option<(Position, T)> {
+        let (x, y) = pos;
+        let width = map.width();
+        let height = map.height();
+        let new = match self {
+            Self::Up => {
+                if y == 0 {
+                    return None;
+                }
+                (x, y - 1)
+            }
+            Self::Down => {
+                if y == height - 1 {
+                    return None;
+                }
+                (x, y + 1)
+            }
+            Self::Left => {
+                if x == 0 {
+                    return None;
+                }
+                (x - 1, y)
+            }
+            Self::Right => {
+                if x == width - 1 {
+                    return None;
+                }
+                (x + 1, y)
+            }
+        };
+        if let Some(state) = map.get(new) {
+            return Some((new, state));
+        }
+        None
+    }
+}
+
+pub trait Map<T> {
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
+    fn get(&self, pos: Position) -> Option<T>;
 }
