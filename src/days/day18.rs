@@ -17,7 +17,16 @@ impl Solution for Day18 {
             map.corrupted.insert(bytes[i]);
         }
         let dist = minimal_path(&map);
-        Answers::ok(Some(dist), None)
+        let mut byte_str = String::new();
+        for i in num_bytes..bytes.len() {
+            let byte = bytes[i];
+            map.corrupted.insert(byte);
+            if let None = minimal_path(&map) {
+                byte_str = format!("{},{}", byte.0, byte.1);
+                break;
+            }
+        }
+        Answers::ok(dist, Some(byte_str))
     }
 }
 
@@ -48,7 +57,7 @@ fn parse_input(filename: &str) -> Result<(Vec<Position>, usize, usize), Box<dyn 
     Ok((bytes, num_bytes, map_size))
 }
 
-fn minimal_path(map: &Day18Map) -> usize {
+fn minimal_path(map: &Day18Map) -> Option<usize> {
     let start = (0, 0);
     let end = (map.width() - 1, map.height() - 1);
     let mut heap = BinaryHeap::from([(Reverse(0), start)]);
@@ -56,24 +65,31 @@ fn minimal_path(map: &Day18Map) -> usize {
     let mut low_dists = HashMap::new();
     while let Some((Reverse(dist), pos)) = heap.pop() {
         let prev_dist = *low_dists.get(&pos).unwrap_or(&usize::MAX);
-
         if dist >= prev_dist {
             continue;
         }
         low_dists.insert(pos, dist);
+
         if !visited.insert(pos) {
             continue;
         }
+
         if pos == end {
             continue;
         }
+
         for d in Direction::all() {
             if let Some(((x, y), Cell::Safe)) = d.go(map, pos) {
                 heap.push((Reverse(dist + 1), (x, y)));
             }
         }
     }
-    *low_dists.get(&end).unwrap()
+
+    if low_dists.contains_key(&end) {
+        Some(low_dists[&end])
+    } else {
+        None
+    }
 }
 
 #[derive(Debug)]
@@ -124,7 +140,7 @@ enum Cell {
 }
 
 impl Display for Cell {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::Safe => write!(f, "."),
             Self::Corrupted => write!(f, "#"),
