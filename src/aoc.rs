@@ -14,7 +14,7 @@ impl<T: Display, U: Display> Display for Answers<T, U> {
         if let Some(part1) = &self.part1 {
             write!(f, "Part 1: {part1}")?;
             if let Some(_) = &self.part2 {
-                write!(f, "\n");
+                write!(f, "\n")?;
             }
         }
         if let Some(part2) = &self.part2 {
@@ -29,8 +29,6 @@ impl<T: Display, U: Display> Answers<T, U> {
         Ok(Answers { part1, part2 })
     }
 }
-
-pub trait Thing<T: Solution> {}
 
 pub trait Solution {
     type Part1: Display;
