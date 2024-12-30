@@ -1,4 +1,4 @@
-use crate::aoc::{read_lines, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
 use std::fmt::Display;
 use std::io;
@@ -7,7 +7,10 @@ use std::path::Path;
 pub struct Day15;
 
 impl Solution for Day15 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = usize;
+    type Part2 = usize;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let (mut map, mut robot) = parse_input("./data/day15.txt")?;
         let mut expanded_map = map.expanded()?;
         let mut other_robot = robot.clone();
@@ -16,7 +19,7 @@ impl Solution for Day15 {
         let sum1 = map.compute_sum();
         while let Some(_) = other_robot.do_move(&mut expanded_map) {}
         let sum2 = expanded_map.compute_sum();
-        Ok((Some(sum1.to_string()), Some(sum2.to_string())))
+        Answers::ok(Some(sum1), Some(sum2))
     }
 }
 

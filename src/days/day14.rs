@@ -1,4 +1,4 @@
-use crate::aoc::{read_lines, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Solution};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::hash::Hash;
@@ -7,7 +7,10 @@ use std::path::Path;
 pub struct Day14;
 
 impl Solution for Day14 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = i32;
+    type Part2 = i32;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let robots = parse_input("./data/day14.txt")?;
         let dim = (101, 103);
         let mut count_by_quadrant: HashMap<Quadrant, i32> = HashMap::new();
@@ -33,10 +36,7 @@ impl Solution for Day14 {
             }
             num_seconds += 1;
         }
-        Ok((
-            Some(safety_score.to_string()),
-            Some(num_seconds.to_string()),
-        ))
+        Answers::ok(Some(safety_score), Some(num_seconds))
     }
 }
 

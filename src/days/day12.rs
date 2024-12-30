@@ -1,11 +1,14 @@
-use crate::aoc::{read_lines, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Solution};
 use std::collections::HashSet;
 use std::error::Error;
 
 pub struct Day12;
 
 impl Solution for Day12 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = i32;
+    type Part2 = i32;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let lines = read_lines("./data/day12.txt")?;
         let grid = lines
             .flatten()
@@ -33,10 +36,7 @@ impl Solution for Day12 {
         for region in &regions {
             discount_cost += (region.plots.len() as i32) * region.count_sides();
         }
-        Ok((
-            Some(total_cost.to_string()),
-            Some(discount_cost.to_string()),
-        ))
+        Answers::ok(Some(total_cost), Some(discount_cost))
     }
 }
 

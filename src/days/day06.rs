@@ -1,19 +1,19 @@
-use crate::aoc::{read_chars, FileCharIterator, Solution, SolutionParts};
+use crate::aoc::{read_chars, Answers, FileCharIterator, Solution};
 use std::collections::HashSet;
 use std::error::Error;
 
 pub struct Day06;
 
 impl Solution for Day06 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = i32;
+    type Part2 = usize;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let chars = read_chars("./data/day06.txt")?;
 
         let mut state = parse_input(chars)?;
 
-        Ok((
-            Some(do_part1(&mut state)?.to_string()),
-            Some(do_part2(&state)?.to_string()),
-        ))
+        Answers::ok(Some(do_part1(&mut state)?), Some(do_part2(&state)?))
     }
 }
 

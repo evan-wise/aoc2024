@@ -1,14 +1,13 @@
-use crate::aoc::{read_chars, Solution, SolutionParts};
+use crate::aoc::{read_chars, Answers, Solution};
 use std::error::Error;
 
 pub struct Day03;
 
 impl Solution for Day03 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
-        Ok((
-            Some(compute_total(false)?.to_string()),
-            Some(compute_total(true)?.to_string()),
-        ))
+    type Part1 = i32;
+    type Part2 = i32;
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+        Answers::ok(Some(compute_total(false)?), Some(compute_total(true)?))
     }
 }
 

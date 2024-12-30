@@ -1,4 +1,4 @@
-use crate::aoc::{read_lines, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Solution};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::error::Error;
@@ -6,7 +6,9 @@ use std::error::Error;
 pub struct Day05;
 
 impl Solution for Day05 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = i32;
+    type Part2 = i32;
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part1>, Box<dyn Error>> {
         let mut rules: HashMap<String, Vec<String>> = HashMap::new();
         let mut correct_total = 0;
         let mut corrected_total = 0;
@@ -68,9 +70,6 @@ impl Solution for Day05 {
                 }
             }
         }
-        Ok((
-            Some(correct_total.to_string()),
-            Some(corrected_total.to_string()),
-        ))
+        Answers::ok(Some(correct_total), Some(corrected_total))
     }
 }

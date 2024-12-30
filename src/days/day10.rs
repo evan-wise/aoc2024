@@ -1,11 +1,14 @@
-use crate::aoc::{read_chars, Solution, SolutionParts};
+use crate::aoc::{read_chars, Answers, Solution};
 use std::collections::HashSet;
 use std::error::Error;
 
 pub struct Day10;
 
 impl Solution for Day10 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = usize;
+    type Part2 = i32;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let chars = read_chars("./data/day10.txt")?;
         let mut i = 0;
         let mut j = 0;
@@ -46,7 +49,7 @@ impl Solution for Day10 {
             rating += map.compute_rating(*trailhead);
         }
 
-        Ok((Some(score.to_string()), Some(rating.to_string())))
+        Answers::ok(Some(score), Some(rating))
     }
 }
 

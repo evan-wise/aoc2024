@@ -1,10 +1,13 @@
-use crate::aoc::{read_lines, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
 
 pub struct Day07;
 
 impl Solution for Day07 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = u64;
+    type Part2 = u64;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let mut total = 0;
         let mut total_with_concat = 0;
         let lines = read_lines("./data/day07.txt")?;
@@ -25,7 +28,7 @@ impl Solution for Day07 {
                 total_with_concat += test_val;
             }
         }
-        Ok((Some(total.to_string()), Some(total_with_concat.to_string())))
+        Answers::ok(Some(total), Some(total_with_concat))
     }
 }
 

@@ -1,13 +1,54 @@
 use std::error::Error;
-use std::fmt::Display;
+use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines, Read};
 use std::path::Path;
 
-pub type SolutionParts = (Option<String>, Option<String>);
+pub struct Answers<T: Display, U: Display> {
+    part1: Option<T>,
+    part2: Option<U>,
+}
+
+impl<T: Display, U: Display> Display for Answers<T, U> {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        if let Some(part1) = &self.part1 {
+            write!(f, "Part 1: {part1}")?;
+            if let Some(_) = &self.part2 {
+                write!(f, "\n");
+            }
+        }
+        if let Some(part2) = &self.part2 {
+            write!(f, "Part 2: {part2}")?;
+        }
+        Ok(())
+    }
+}
+
+impl<T: Display, U: Display> Answers<T, U> {
+    pub fn ok(part1: Option<T>, part2: Option<U>) -> Result<Answers<T, U>, Box<dyn Error>> {
+        Ok(Answers { part1, part2 })
+    }
+}
+
+pub trait Thing<T: Solution> {}
 
 pub trait Solution {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>>;
+    type Part1: Display;
+    type Part2: Display;
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>>;
+}
+
+pub trait SolutionWrapper {
+    fn solve_string(&self) -> Result<String, Box<dyn Error>>;
+}
+
+impl<T> SolutionWrapper for T
+where
+    T: Solution,
+{
+    fn solve_string(&self) -> Result<String, Box<dyn Error>> {
+        Ok(format!("{}", self.solve()?))
+    }
 }
 
 pub struct FileCharIterator {
@@ -130,7 +171,7 @@ pub trait Map {
 pub struct MapDisplay<'a, T: Map>(pub &'a T);
 
 impl<'a, T: Map> Display for MapDisplay<'a, T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         let height = self.0.height();
         let width = self.0.width();
         for y in 0..height {

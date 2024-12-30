@@ -1,4 +1,4 @@
-use crate::aoc::{read_lines, Direction, Map, MapDisplay, Position, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Direction, Map, Position, Solution};
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::error::Error;
@@ -7,26 +7,28 @@ use std::fmt::Display;
 pub struct Day18;
 
 impl Solution for Day18 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = usize;
+    type Part2 = String;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let (bytes, num_bytes, map_size) = parse_input("./data/day18.txt")?;
         let mut map = Day18Map::new(map_size);
         for i in 0..num_bytes {
             map.corrupted.insert(bytes[i]);
         }
-        println!("{}", MapDisplay(&map));
-        let dist = minimal_path(&map).to_string();
-        Ok((Some(dist), None))
+        let dist = minimal_path(&map);
+        Answers::ok(Some(dist), None)
     }
 }
 
 fn parse_input(filename: &str) -> Result<(Vec<Position>, usize, usize), Box<dyn Error>> {
     let lines = read_lines(filename)?;
-    let num_bytes = if filename.starts_with("./data") {
+    let num_bytes = if filename.contains("/data/") {
         1024
-    } else if filename.starts_with("./examples") {
+    } else if filename.contains("/examples/") {
         12
     } else {
-        return Err("expected path to start with \"./data\" or \"./examples\"".into());
+        return Err("expected path to contain \"/data/\" or \"/examples/\"".into());
     };
     let map_size = if num_bytes == 1024 { 71 } else { 7 };
     let mut bytes = Vec::new();
@@ -83,6 +85,7 @@ struct Day18Map {
 
 impl Map for Day18Map {
     type Cell = Cell;
+
     fn width(&self) -> usize {
         self.width
     }

@@ -1,4 +1,4 @@
-use crate::aoc::{read_lines, Direction, Position, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Direction, Position, Solution};
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::error::Error;
@@ -8,10 +8,13 @@ use std::path::Path;
 pub struct Day16;
 
 impl Solution for Day16 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = usize;
+    type Part2 = usize;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let map = parse_input("./data/day16.txt")?;
         let (score, num_seats) = minimal_paths(&map);
-        Ok((Some(score.to_string()), Some(num_seats.to_string())))
+        Answers::ok(Some(score), Some(num_seats))
     }
 }
 

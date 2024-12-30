@@ -1,10 +1,13 @@
-use crate::aoc::{read_lines, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
 
 pub struct Day04;
 
 impl Solution for Day04 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = i32;
+    type Part2 = i32;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let mut xmas_total = 0;
         let mut cross_total = 0;
         if let Ok(lines) = read_lines("./data/day04.txt") {
@@ -18,7 +21,7 @@ impl Solution for Day04 {
                 }
             }
         }
-        Ok((Some(xmas_total.to_string()), Some(cross_total.to_string())))
+        Answers::ok(Some(xmas_total), Some(cross_total))
     }
 }
 

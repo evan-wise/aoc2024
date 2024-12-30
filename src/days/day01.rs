@@ -1,11 +1,14 @@
-use crate::aoc::{read_lines, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Solution};
 use std::collections::HashMap;
 use std::error::Error;
 
 pub struct Day01;
 
 impl Solution for Day01 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = i32;
+    type Part2 = i32;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let mut list1 = vec![0; 1000];
         let mut list2 = vec![0; 1000];
         if let Ok(lines) = read_lines("./data/day01.txt") {
@@ -45,9 +48,6 @@ impl Solution for Day01 {
             }
         }
 
-        Ok((
-            Some(total_distance.to_string()),
-            Some(cum_score.to_string()),
-        ))
+        Answers::ok(Some(total_distance), Some(cum_score))
     }
 }

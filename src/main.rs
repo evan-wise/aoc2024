@@ -1,7 +1,7 @@
 mod aoc;
 mod days;
 
-use crate::aoc::Solution;
+use crate::aoc::SolutionWrapper;
 use crate::days::*;
 use std::env;
 use std::error::Error;
@@ -12,14 +12,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let solutions = solutions();
     match maybe_solution_num {
         None => {
+            let mut total = Duration::new(0, 0);
             for i in 0..solutions.len() {
-                if i > 0 {
-                    println!("");
-                }
                 println!("~- DAY {:0>2} -~", i + 1);
                 let duration = run_solution(&solutions[i])?;
+                total += duration;
                 println!("Run time: {}ms", duration.as_millis());
+                println!("");
             }
+            println!("Total solution time: {}ms", total.as_millis());
         }
         Some(solution_num) => {
             if solution_num < 1 || solution_num > solutions.len() {
@@ -45,15 +46,10 @@ fn parse_args() -> Result<Option<usize>, Box<dyn Error>> {
     Ok(Some(args[0].parse::<usize>()?))
 }
 
-fn run_solution(solution: &Box<dyn Solution>) -> Result<Duration, Box<dyn Error>> {
+fn run_solution(solution: &Box<dyn SolutionWrapper>) -> Result<Duration, Box<dyn Error>> {
     let timer = Instant::now();
-    let (maybe_part1, maybe_part2) = solution.solve()?;
+    let answers = solution.solve_string()?;
     let elapsed = timer.elapsed();
-    if let Some(part1) = maybe_part1 {
-        println!("Part 1: {part1}");
-    }
-    if let Some(part2) = maybe_part2 {
-        println!("Part 2: {part2}");
-    }
+    println!("{answers}");
     Ok(elapsed)
 }

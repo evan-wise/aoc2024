@@ -1,11 +1,14 @@
-use crate::aoc::{read_chars, Solution, SolutionParts};
+use crate::aoc::{read_chars, Answers, Solution};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 
 pub struct Day08;
 
 impl Solution for Day08 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = usize;
+    type Part2 = usize;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let mut antennas_by_freq: HashMap<char, Vec<Antenna>> = HashMap::new();
         let mut i = 0;
         let mut j = 0;
@@ -49,10 +52,7 @@ impl Solution for Day08 {
             }
         }
 
-        Ok((
-            Some(antinodes.len().to_string()),
-            Some(harmonic_antinodes.len().to_string()),
-        ))
+        Answers::ok(Some(antinodes.len()), Some(harmonic_antinodes.len()))
     }
 }
 

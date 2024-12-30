@@ -1,4 +1,4 @@
-use crate::aoc::{read_lines, Solution, SolutionParts};
+use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
 use std::num::ParseIntError;
 use std::path::Path;
@@ -6,7 +6,10 @@ use std::path::Path;
 pub struct Day17;
 
 impl Solution for Day17 {
-    fn solve(&self) -> Result<SolutionParts, Box<dyn Error>> {
+    type Part1 = String;
+    type Part2 = u128;
+
+    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let mut computer = parse_input("./data/day17.txt")?;
         let output = computer.run()?;
         let output_str = output
@@ -14,8 +17,8 @@ impl Solution for Day17 {
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
             .join(",");
-        let quine_a = backtrack(&computer)?.to_string();
-        Ok((Some(output_str), Some(quine_a)))
+        let quine_a = backtrack(&computer)?;
+        Answers::ok(Some(output_str), Some(quine_a))
     }
 }
 
