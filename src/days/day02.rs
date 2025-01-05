@@ -16,9 +16,6 @@ impl Day02 {
 }
 
 impl Solution for Day02 {
-    type Part1 = i32;
-    type Part2 = i32;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day02.txt")?;
         for line in lines.flatten() {
@@ -31,7 +28,7 @@ impl Solution for Day02 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let mut count = 0;
         let mut dampener_count = 0;
         for nums in &self.reports {
@@ -48,7 +45,7 @@ impl Solution for Day02 {
                 }
             }
         }
-        Answers::ok(Some(count), Some(dampener_count))
+        Ok(Answers::from(Some(count), Some(dampener_count)))
     }
 }
 

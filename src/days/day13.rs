@@ -15,9 +15,6 @@ impl Day13 {
 }
 
 impl Solution for Day13 {
-    type Part1 = i64;
-    type Part2 = i64;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day13.txt")?;
         let mut maybe_button_a: Option<Button> = None;
@@ -74,11 +71,11 @@ impl Solution for Day13 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let cost1 = compute_cost(&self.claw_machines);
         rescale_prizes(&mut self.claw_machines);
         let cost2 = compute_cost(&self.claw_machines);
-        Answers::ok(Some(cost1), Some(cost2))
+        Ok(Answers::from(Some(cost1), Some(cost2)))
     }
 }
 

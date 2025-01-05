@@ -73,9 +73,6 @@ impl Day10 {
 }
 
 impl Solution for Day10 {
-    type Part1 = usize;
-    type Part2 = i32;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let chars = read_chars("./data/day10.txt")?;
         let mut i = 0;
@@ -110,7 +107,7 @@ impl Solution for Day10 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let mut score = 0;
         for trailhead in &self.trailheads {
             let mut summits = HashSet::new();
@@ -123,6 +120,6 @@ impl Solution for Day10 {
             rating += self.compute_rating(*trailhead);
         }
 
-        Answers::ok(Some(score), Some(rating))
+        Ok(Answers::from(Some(score), Some(rating)))
     }
 }

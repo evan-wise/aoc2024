@@ -15,9 +15,6 @@ impl Day14 {
 }
 
 impl Solution for Day14 {
-    type Part1 = i32;
-    type Part2 = i32;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day14.txt")?;
         for line in lines.flatten() {
@@ -32,7 +29,7 @@ impl Solution for Day14 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let dim = (101, 103);
         let mut count_by_quadrant: HashMap<Quadrant, i32> = HashMap::new();
         for final_pos in self.robots.iter().map(|r| r.final_pos(100, dim)) {
@@ -57,7 +54,7 @@ impl Solution for Day14 {
             }
             num_seconds += 1;
         }
-        Answers::ok(Some(safety_score), Some(num_seconds))
+        Ok(Answers::from(Some(safety_score), Some(num_seconds)))
     }
 }
 

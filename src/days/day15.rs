@@ -256,9 +256,6 @@ impl Day15 {
 }
 
 impl Solution for Day15 {
-    type Part1 = usize;
-    type Part2 = usize;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day15.txt")?;
         let mut before_break = true;
@@ -293,7 +290,7 @@ impl Solution for Day15 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let expanded_grid = self.expanded()?;
         let (x, y) = self.robot.pos;
 
@@ -307,7 +304,7 @@ impl Solution for Day15 {
 
         while let Some(_) = self.do_move() {}
         let sum2 = self.compute_sum();
-        Answers::ok(Some(sum1), Some(sum2))
+        Ok(Answers::from(Some(sum1), Some(sum2)))
     }
 }
 

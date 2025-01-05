@@ -4,12 +4,12 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines, Read};
 use std::path::Path;
 
-pub struct Answers<T: Display, U: Display> {
-    part1: Option<T>,
-    part2: Option<U>,
+pub struct Answers {
+    part1: Option<String>,
+    part2: Option<String>,
 }
 
-impl<T: Display, U: Display> Display for Answers<T, U> {
+impl Display for Answers {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         if let Some(part1) = &self.part1 {
             write!(f, "Part 1: {part1}")?;
@@ -24,35 +24,25 @@ impl<T: Display, U: Display> Display for Answers<T, U> {
     }
 }
 
-impl<T: Display, U: Display> Answers<T, U> {
-    pub fn ok(part1: Option<T>, part2: Option<U>) -> Result<Answers<T, U>, Box<dyn Error>> {
-        Ok(Answers { part1, part2 })
+impl Answers {
+    pub fn from<T: Display, U: Display>(part1: Option<T>, part2: Option<U>) -> Answers {
+        let part1 = if let Some(p1) = part1 {
+            Some(format!("{}", p1))
+        } else {
+            None
+        };
+        let part2 = if let Some(p2) = part2 {
+            Some(format!("{}", p2))
+        } else {
+            None
+        };
+        Answers { part1, part2 }
     }
 }
 
 pub trait Solution {
-    type Part1: Display;
-    type Part2: Display;
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>>;
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>>;
-}
-
-pub trait SolutionWrapper {
-    fn parse_input_wrapper(&mut self) -> Result<(), Box<dyn Error>>;
-    fn solve_string(&mut self) -> Result<String, Box<dyn Error>>;
-}
-
-impl<T> SolutionWrapper for T
-where
-    T: Solution,
-{
-    fn parse_input_wrapper(&mut self) -> Result<(), Box<dyn Error>> {
-        self.parse_input()?;
-        Ok(())
-    }
-    fn solve_string(&mut self) -> Result<String, Box<dyn Error>> {
-        Ok(format!("{}", self.solve()?))
-    }
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>>;
 }
 
 pub struct FileCharIterator {

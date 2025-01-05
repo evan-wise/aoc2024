@@ -19,9 +19,6 @@ impl Day05 {
 }
 
 impl Solution for Day05 {
-    type Part1 = usize;
-    type Part2 = usize;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day05.txt")?;
         let mut in_rules_section = true;
@@ -51,7 +48,7 @@ impl Solution for Day05 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part1>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let mut correct_total = 0;
         let mut corrected_total = 0;
         for pages in &mut self.updates {
@@ -91,6 +88,6 @@ impl Solution for Day05 {
                 corrected_total += pages[num_pages / 2];
             }
         }
-        Answers::ok(Some(correct_total), Some(corrected_total))
+        Ok(Answers::from(Some(correct_total), Some(corrected_total)))
     }
 }

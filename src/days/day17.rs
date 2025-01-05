@@ -15,9 +15,6 @@ impl Day17 {
 }
 
 impl Solution for Day17 {
-    type Part1 = String;
-    type Part2 = u128;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day17.txt")?;
         for line in lines.flatten() {
@@ -46,7 +43,7 @@ impl Solution for Day17 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let output = self.computer.run()?;
         let output_str = output
             .iter()
@@ -54,7 +51,7 @@ impl Solution for Day17 {
             .collect::<Vec<_>>()
             .join(",");
         let quine_a = backtrack(&self.computer)?;
-        Answers::ok(Some(output_str), Some(quine_a))
+        Ok(Answers::from(Some(output_str), Some(quine_a)))
     }
 }
 

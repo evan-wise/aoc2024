@@ -18,9 +18,6 @@ impl Day11 {
 }
 
 impl Solution for Day11 {
-    type Part1 = u64;
-    type Part2 = u64;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let raw = read_to_string("./data/day11.txt")?;
         for stone in raw.split_whitespace().map(|s| s.parse::<u64>()).flatten() {
@@ -29,7 +26,7 @@ impl Solution for Day11 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         for _ in 0..25 {
             self.stone_count_by_num = blink(&self.stone_count_by_num)?;
         }
@@ -38,7 +35,7 @@ impl Solution for Day11 {
             self.stone_count_by_num = blink(&self.stone_count_by_num)?;
         }
         let total2 = get_total(&self.stone_count_by_num);
-        Answers::ok(Some(total1), Some(total2))
+        Ok(Answers::from(Some(total1), Some(total2)))
     }
 }
 

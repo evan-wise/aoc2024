@@ -18,7 +18,7 @@ pub mod day17;
 pub mod day18;
 pub mod day19;
 
-pub fn solutions() -> Vec<Box<dyn crate::aoc::SolutionWrapper>> {
+pub fn solutions() -> Vec<Box<dyn crate::aoc::Solution>> {
     vec![
         Box::new(day01::Day01::new()),
         Box::new(day02::Day02::new()),

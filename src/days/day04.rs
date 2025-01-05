@@ -15,9 +15,6 @@ impl Day04 {
 }
 
 impl Solution for Day04 {
-    type Part1 = i32;
-    type Part2 = i32;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day04.txt")?;
         self.wordsearch
@@ -25,7 +22,7 @@ impl Solution for Day04 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let mut xmas_total = 0;
         let mut cross_total = 0;
         for (i, s) in self.wordsearch.iter().enumerate() {
@@ -36,7 +33,7 @@ impl Solution for Day04 {
                 }
             }
         }
-        Answers::ok(Some(xmas_total), Some(cross_total))
+        Ok(Answers::from(Some(xmas_total), Some(cross_total)))
     }
 }
 

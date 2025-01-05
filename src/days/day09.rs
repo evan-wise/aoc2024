@@ -1,6 +1,5 @@
-use crate::aoc::{read_chars, Answers, FileCharIterator, Solution};
+use crate::aoc::{read_chars, Answers,  Solution};
 use std::error::Error;
-use std::num::ParseIntError;
 
 #[derive(Debug)]
 pub struct Day09 {
@@ -14,9 +13,6 @@ impl Day09 {
 }
 
 impl Solution for Day09 {
-    type Part1 = usize;
-    type Part2 = usize;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let chars = read_chars("./data/day09.txt")?;
         for (i, c) in chars.flatten().enumerate() {
@@ -34,14 +30,14 @@ impl Solution for Day09 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let mut blocks1 = self.blocks.clone();
         compact_by_block(&mut blocks1);
         let checksum1 = compute_checksum(&blocks1);
         let mut blocks2 = self.blocks.clone();
         compact_by_chunk(&mut blocks2);
         let checksum2 = compute_checksum(&blocks2);
-        Answers::ok(Some(checksum1), Some(checksum2))
+        Ok(Answers::from(Some(checksum1), Some(checksum2)))
     }
 }
 

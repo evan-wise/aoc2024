@@ -59,9 +59,6 @@ impl Day18 {
 }
 
 impl Solution for Day18 {
-    type Part1 = usize;
-    type Part2 = String;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let filename = "./data/day18.txt";
         let lines = read_lines(filename)?;
@@ -89,7 +86,7 @@ impl Solution for Day18 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         for i in 0..self.num_bytes {
             self.corrupted.insert(self.bytes[i]);
         }
@@ -103,7 +100,7 @@ impl Solution for Day18 {
                 break;
             }
         }
-        Answers::ok(dist, Some(byte_str))
+        Ok(Answers::from(dist, Some(byte_str)))
     }
 }
 

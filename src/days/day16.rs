@@ -123,9 +123,6 @@ impl Day16 {
 }
 
 impl Solution for Day16 {
-    type Part1 = usize;
-    type Part2 = usize;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day16.txt")?;
         for (y, line) in lines.flatten().enumerate() {
@@ -154,9 +151,9 @@ impl Solution for Day16 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let (score, num_seats) = self.minimal_paths();
-        Answers::ok(Some(score), Some(num_seats))
+        Ok(Answers::from(Some(score), Some(num_seats)))
     }
 }
 

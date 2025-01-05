@@ -59,7 +59,7 @@ impl Day06 {
 
     fn step(&mut self) -> Option<bool> {
         if !self.check_bounds() {
-            return None
+            return None;
         }
         let (i, j) = self.guard.position;
         let (k, l, turn) = match self.guard.direction {
@@ -98,9 +98,6 @@ impl Day06 {
 }
 
 impl Solution for Day06 {
-    type Part1 = usize;
-    type Part2 = usize;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let mut row = Vec::new();
         let mut i = 0;
@@ -135,7 +132,7 @@ impl Solution for Day06 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         self.simulate();
         let part1 = self.visited.len();
 
@@ -161,7 +158,7 @@ impl Solution for Day06 {
         }
         let part2 = self.loops.len();
 
-        Answers::ok(Some(part1), Some(part2))
+        Ok(Answers::from(Some(part1), Some(part2)))
     }
 }
 

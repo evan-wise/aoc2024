@@ -1,7 +1,7 @@
 mod aoc;
 mod days;
 
-use crate::aoc::SolutionWrapper;
+use crate::aoc::Solution;
 use crate::days::*;
 use std::env;
 use std::error::Error;
@@ -55,15 +55,15 @@ fn parse_args() -> Result<Option<usize>, Box<dyn Error>> {
     Ok(Some(args[0].parse::<usize>()?))
 }
 
-fn run_solution(
-    solution: &mut Box<dyn SolutionWrapper>,
-) -> Result<(Duration, Duration), Box<dyn Error>> {
+fn run_solution(solution: &mut Box<dyn Solution>) -> Result<(Duration, Duration), Box<dyn Error>> {
     let parse_timer = Instant::now();
-    solution.parse_input_wrapper()?;
+    solution.parse_input()?;
     let parse_time = parse_timer.elapsed();
+
     let solution_timer = Instant::now();
-    let answers = solution.solve_string()?;
+    let answers = solution.solve()?;
     let solution_time = solution_timer.elapsed();
+
     println!("{answers}");
     Ok((parse_time, solution_time))
 }

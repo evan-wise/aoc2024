@@ -48,9 +48,6 @@ impl Day08 {
 }
 
 impl Solution for Day08 {
-    type Part1 = usize;
-    type Part2 = usize;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let mut i = 0;
         let mut j = 0;
@@ -86,7 +83,7 @@ impl Solution for Day08 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let mut antinodes = HashSet::new();
         let mut harmonic_antinodes = HashSet::new();
         for (_, antennas) in &self.antennas_by_freq {
@@ -100,7 +97,10 @@ impl Solution for Day08 {
             }
         }
 
-        Answers::ok(Some(antinodes.len()), Some(harmonic_antinodes.len()))
+        Ok(Answers::from(
+            Some(antinodes.len()),
+            Some(harmonic_antinodes.len()),
+        ))
     }
 }
 

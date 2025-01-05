@@ -18,9 +18,6 @@ impl Day01 {
 }
 
 impl Solution for Day01 {
-    type Part1 = i32;
-    type Part2 = i32;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day01.txt")?;
         for (i, line) in lines.flatten().enumerate() {
@@ -35,7 +32,7 @@ impl Solution for Day01 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         if let Ok(lines) = read_lines("./data/day01.txt") {
             for (i, line) in lines.flatten().enumerate() {
                 let mut iter = line.split("   ");
@@ -73,6 +70,6 @@ impl Solution for Day01 {
             }
         }
 
-        Answers::ok(Some(total_distance), Some(cum_score))
+        Ok(Answers::from(Some(total_distance), Some(cum_score)))
     }
 }

@@ -67,9 +67,6 @@ impl Day12 {
 }
 
 impl Solution for Day12 {
-    type Part1 = i32;
-    type Part2 = i32;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day12.txt")?;
         self.grid
@@ -83,7 +80,7 @@ impl Solution for Day12 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let mut regions = Vec::new();
         let mut already_found: HashSet<(i32, i32)> = HashSet::new();
         for y in 0..self.height {
@@ -105,7 +102,7 @@ impl Solution for Day12 {
         for region in &regions {
             discount_cost += (region.plots.len() as i32) * region.count_sides();
         }
-        Answers::ok(Some(total_cost), Some(discount_cost))
+        Ok(Answers::from(Some(total_cost), Some(discount_cost)))
     }
 }
 

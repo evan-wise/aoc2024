@@ -15,9 +15,6 @@ impl Day07 {
 }
 
 impl Solution for Day07 {
-    type Part1 = u64;
-    type Part2 = u64;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day07.txt")?;
         for line in lines.flatten() {
@@ -35,7 +32,7 @@ impl Solution for Day07 {
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let mut total = 0;
         let mut total_with_concat = 0;
         for (test_val, nums) in &self.equations {
@@ -46,7 +43,7 @@ impl Solution for Day07 {
                 total_with_concat += test_val;
             }
         }
-        Answers::ok(Some(total), Some(total_with_concat))
+        Ok(Answers::from(Some(total), Some(total_with_concat)))
     }
 }
 

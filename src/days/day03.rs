@@ -13,19 +13,16 @@ impl Day03 {
 }
 
 impl Solution for Day03 {
-    type Part1 = i32;
-    type Part2 = i32;
-
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         self.chars.extend(read_chars("./data/day03.txt")?.flatten());
         Ok(())
     }
 
-    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
-        Answers::ok(
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
+        Ok(Answers::from(
             Some(compute_total(&self.chars, false)?),
             Some(compute_total(&self.chars, true)?),
-        )
+        ))
     }
 }
 
