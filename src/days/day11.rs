@@ -4,34 +4,40 @@ use std::error::Error;
 use std::fs::read_to_string;
 use std::num::ParseIntError;
 
-pub struct Day11;
+#[derive(Debug)]
+pub struct Day11 {
+    stone_count_by_num: HashMap<u64, u64>,
+}
+
+impl Day11 {
+    pub fn new() -> Day11 {
+        Day11 {
+            stone_count_by_num: HashMap::new(),
+        }
+    }
+}
 
 impl Solution for Day11 {
     type Part1 = u64;
     type Part2 = u64;
 
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let raw = read_to_string("./data/day11.txt")?;
-        let stones: Vec<u64> = raw
-            .split_whitespace()
-            .map(|s| s.parse::<u64>().unwrap())
-            .collect::<Vec<u64>>();
-        let mut stone_count_by_num = HashMap::new();
-        for &stone in &stones {
-            if let Some(&count) = stone_count_by_num.get(&stone) {
-                stone_count_by_num.insert(stone, count + 1);
-            } else {
-                stone_count_by_num.insert(stone, 1 as u64);
-            }
+        for stone in raw.split_whitespace().map(|s| s.parse::<u64>()).flatten() {
+            *self.stone_count_by_num.entry(stone).or_insert(0) += 1;
         }
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         for _ in 0..25 {
-            stone_count_by_num = blink(&stone_count_by_num)?;
+            self.stone_count_by_num = blink(&self.stone_count_by_num)?;
         }
-        let total1 = get_total(&stone_count_by_num);
+        let total1 = get_total(&self.stone_count_by_num);
         for _ in 0..50 {
-            stone_count_by_num = blink(&stone_count_by_num)?;
+            self.stone_count_by_num = blink(&self.stone_count_by_num)?;
         }
-        let total2 = get_total(&stone_count_by_num);
+        let total2 = get_total(&self.stone_count_by_num);
         Answers::ok(Some(total1), Some(total2))
     }
 }

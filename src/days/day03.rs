@@ -1,13 +1,31 @@
 use crate::aoc::{read_chars, Answers, Solution};
 use std::error::Error;
 
-pub struct Day03;
+#[derive(Debug)]
+pub struct Day03 {
+    chars: Vec<char>,
+}
+
+impl Day03 {
+    pub fn new() -> Day03 {
+        Day03 { chars: Vec::new() }
+    }
+}
 
 impl Solution for Day03 {
     type Part1 = i32;
     type Part2 = i32;
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
-        Answers::ok(Some(compute_total(false)?), Some(compute_total(true)?))
+
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        self.chars.extend(read_chars("./data/day03.txt")?.flatten());
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+        Answers::ok(
+            Some(compute_total(&self.chars, false)?),
+            Some(compute_total(&self.chars, true)?),
+        )
     }
 }
 
@@ -22,17 +40,16 @@ enum State {
     CloseParenFound,
 }
 
-fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
-    let chars = read_chars("./data/day03.txt")?;
+fn compute_total(chars: &Vec<char>, handle_dos: bool) -> Result<i32, Box<dyn Error>> {
     let mut state = State::Seeking;
     let mut temp = String::new();
     let mut first_num = 0;
     let mut second_num = 0;
     let mut total = 0;
-    for char in chars.flatten() {
+    for char in chars {
         match state {
             State::Disabled => {
-                temp.push(char);
+                temp.push(*char);
                 if temp.len() > 4 {
                     temp = temp[1..].to_string();
                 }
@@ -42,7 +59,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
                 }
             }
             State::Seeking => {
-                temp.push(char);
+                temp.push(*char);
                 if temp.len() > 7 {
                     temp = temp[1..].to_string();
                 }
@@ -55,7 +72,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
                 }
             }
             State::MulFound => {
-                if char == '(' {
+                if *char == '(' {
                     state = State::OpenParenFound;
                 } else {
                     state = State::Seeking;
@@ -65,7 +82,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
             State::OpenParenFound => {
                 if char.is_digit(10) {
                     state = State::FirstNumFound;
-                    temp.push(char);
+                    temp.push(*char);
                 } else {
                     state = State::Seeking;
                     temp = char.to_string();
@@ -73,12 +90,12 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
             }
             State::FirstNumFound => {
                 if char.is_digit(10) {
-                    temp.push(char);
+                    temp.push(*char);
                     if temp.len() > 3 {
                         state = State::Seeking;
                         temp = String::new();
                     }
-                } else if char == ',' {
+                } else if *char == ',' {
                     state = State::CommaFound;
                     first_num = temp.parse::<i32>()?;
                     temp = String::new();
@@ -90,7 +107,7 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
             State::CommaFound => {
                 if char.is_digit(10) {
                     state = State::SecondNumFound;
-                    temp.push(char);
+                    temp.push(*char);
                 } else {
                     state = State::Seeking;
                     temp = char.to_string();
@@ -98,12 +115,12 @@ fn compute_total(handle_dos: bool) -> Result<i32, Box<dyn Error>> {
             }
             State::SecondNumFound => {
                 if char.is_digit(10) {
-                    temp.push(char);
+                    temp.push(*char);
                     if temp.len() > 3 {
                         state = State::Seeking;
                         temp = String::new();
                     }
-                } else if char == ')' {
+                } else if *char == ')' {
                     state = State::CloseParenFound;
                     second_num = temp.parse::<i32>()?;
                     total += first_num * second_num;

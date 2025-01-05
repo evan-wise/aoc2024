@@ -1,15 +1,24 @@
 use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
 
-pub struct Day07;
+#[derive(Debug)]
+pub struct Day07 {
+    equations: Vec<(u64, Vec<u64>)>,
+}
+
+impl Day07 {
+    pub fn new() -> Day07 {
+        Day07 {
+            equations: Vec::new(),
+        }
+    }
+}
 
 impl Solution for Day07 {
     type Part1 = u64;
     type Part2 = u64;
 
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
-        let mut total = 0;
-        let mut total_with_concat = 0;
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let lines = read_lines("./data/day07.txt")?;
         for line in lines.flatten() {
             let chunks: Vec<&str> = line.split(": ").collect();
@@ -19,12 +28,21 @@ impl Solution for Day07 {
             let test_val = chunks[0].parse::<u64>()?;
             let nums: Vec<u64> = chunks[1]
                 .split(" ")
-                .map(|s| s.parse::<u64>().unwrap())
-                .collect();
-            if check_equation(test_val, &nums, false) {
+                .map(|s| s.parse::<u64>())
+                .collect::<Result<_, _>>()?;
+            self.equations.push((test_val, nums));
+        }
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+        let mut total = 0;
+        let mut total_with_concat = 0;
+        for (test_val, nums) in &self.equations {
+            if check_equation(*test_val, &nums, false) {
                 total += test_val;
             }
-            if check_equation(test_val, &nums, true) {
+            if check_equation(*test_val, &nums, true) {
                 total_with_concat += test_val;
             }
         }

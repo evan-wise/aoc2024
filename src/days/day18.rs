@@ -4,24 +4,101 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::error::Error;
 use std::fmt::Display;
 
-pub struct Day18;
+#[derive(Debug)]
+pub struct Day18 {
+    bytes: Vec<Position>,
+    num_bytes: usize,
+    size: usize,
+    corrupted: HashSet<Position>,
+}
+
+impl Day18 {
+    pub fn new() -> Day18 {
+        Day18 {
+            bytes: Vec::new(),
+            num_bytes: 0,
+            size: 0,
+            corrupted: HashSet::new(),
+        }
+    }
+
+    fn minimal_path(&self) -> Option<usize> {
+        let start = (0, 0);
+        let end = (self.size - 1, self.size - 1);
+        let mut heap = BinaryHeap::from([(Reverse(0), start)]);
+        let mut visited = HashSet::new();
+        let mut low_dists = HashMap::new();
+        while let Some((Reverse(dist), pos)) = heap.pop() {
+            let prev_dist = *low_dists.get(&pos).unwrap_or(&usize::MAX);
+            if dist >= prev_dist {
+                continue;
+            }
+            low_dists.insert(pos, dist);
+
+            if !visited.insert(pos) {
+                continue;
+            }
+
+            if pos == end {
+                continue;
+            }
+
+            for d in Direction::all() {
+                if let Some(((x, y), Cell::Safe)) = d.go(self, pos) {
+                    heap.push((Reverse(dist + 1), (x, y)));
+                }
+            }
+        }
+
+        if low_dists.contains_key(&end) {
+            Some(low_dists[&end])
+        } else {
+            None
+        }
+    }
+}
 
 impl Solution for Day18 {
     type Part1 = usize;
     type Part2 = String;
 
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
-        let (bytes, num_bytes, map_size) = parse_input("./data/day18.txt")?;
-        let mut map = Day18Map::new(map_size);
-        for i in 0..num_bytes {
-            map.corrupted.insert(bytes[i]);
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        let filename = "./data/day18.txt";
+        let lines = read_lines(filename)?;
+        self.num_bytes = if filename.contains("/data/") {
+            1024
+        } else if filename.contains("/examples/") {
+            12
+        } else {
+            return Err("expected path to contain \"/data/\" or \"/examples/\"".into());
+        };
+        self.size = if self.num_bytes == 1024 { 71 } else { 7 };
+        for (line_num, line) in lines.flatten().enumerate() {
+            let parts = line
+                .split(",")
+                .map(|p| p.parse::<usize>())
+                .collect::<Result<Vec<_>, _>>()?;
+            if parts.len() != 2 {
+                return Err(format!("invalid line {line_num}").into());
+            }
+            self.bytes.push((parts[0], parts[1]));
         }
-        let dist = minimal_path(&map);
+        if self.bytes.len() < self.num_bytes {
+            return Err(format!("byte stream has less than {} bytes", self.num_bytes).into());
+        }
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+        for i in 0..self.num_bytes {
+            self.corrupted.insert(self.bytes[i]);
+        }
+        let dist = self.minimal_path();
         let mut byte_str = String::new();
-        for i in num_bytes..bytes.len() {
-            let byte = bytes[i];
-            map.corrupted.insert(byte);
-            if let None = minimal_path(&map) {
+        for i in self.num_bytes..self.bytes.len() {
+            let byte = self.bytes[i];
+            self.corrupted.insert(byte);
+            if let None = self.minimal_path() {
                 byte_str = format!("{},{}", byte.0, byte.1);
                 break;
             }
@@ -30,89 +107,20 @@ impl Solution for Day18 {
     }
 }
 
-fn parse_input(filename: &str) -> Result<(Vec<Position>, usize, usize), Box<dyn Error>> {
-    let lines = read_lines(filename)?;
-    let num_bytes = if filename.contains("/data/") {
-        1024
-    } else if filename.contains("/examples/") {
-        12
-    } else {
-        return Err("expected path to contain \"/data/\" or \"/examples/\"".into());
-    };
-    let map_size = if num_bytes == 1024 { 71 } else { 7 };
-    let mut bytes = Vec::new();
-    for (line_num, line) in lines.flatten().enumerate() {
-        let parts = line
-            .split(",")
-            .map(|p| p.parse::<usize>())
-            .collect::<Result<Vec<_>, _>>()?;
-        if parts.len() != 2 {
-            return Err(format!("invalid line {line_num}").into());
-        }
-        bytes.push((parts[0], parts[1]));
-    }
-    if bytes.len() < num_bytes {
-        return Err(format!("byte stream has less than {num_bytes} bytes").into());
-    }
-    Ok((bytes, num_bytes, map_size))
-}
-
-fn minimal_path(map: &Day18Map) -> Option<usize> {
-    let start = (0, 0);
-    let end = (map.width() - 1, map.height() - 1);
-    let mut heap = BinaryHeap::from([(Reverse(0), start)]);
-    let mut visited = HashSet::new();
-    let mut low_dists = HashMap::new();
-    while let Some((Reverse(dist), pos)) = heap.pop() {
-        let prev_dist = *low_dists.get(&pos).unwrap_or(&usize::MAX);
-        if dist >= prev_dist {
-            continue;
-        }
-        low_dists.insert(pos, dist);
-
-        if !visited.insert(pos) {
-            continue;
-        }
-
-        if pos == end {
-            continue;
-        }
-
-        for d in Direction::all() {
-            if let Some(((x, y), Cell::Safe)) = d.go(map, pos) {
-                heap.push((Reverse(dist + 1), (x, y)));
-            }
-        }
-    }
-
-    if low_dists.contains_key(&end) {
-        Some(low_dists[&end])
-    } else {
-        None
-    }
-}
-
-#[derive(Debug)]
-struct Day18Map {
-    width: usize,
-    height: usize,
-    corrupted: HashSet<Position>,
-}
-
-impl Map for Day18Map {
+impl Map for Day18 {
     type Cell = Cell;
 
     fn width(&self) -> usize {
-        self.width
+        self.size
     }
 
     fn height(&self) -> usize {
-        self.height
+        self.size
     }
 
     fn get(&self, pos: Position) -> Option<Cell> {
         let (x, y) = pos;
-        if x >= self.width || y >= self.height {
+        if x >= self.size || y >= self.size {
             return None;
         }
         if self.corrupted.contains(&pos) {
@@ -123,18 +131,8 @@ impl Map for Day18Map {
     }
 }
 
-impl Day18Map {
-    fn new(size: usize) -> Day18Map {
-        Day18Map {
-            width: size,
-            height: size,
-            corrupted: HashSet::new(),
-        }
-    }
-}
-
 #[derive(Debug)]
-enum Cell {
+pub enum Cell {
     Safe,
     Corrupted,
 }

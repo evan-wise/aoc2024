@@ -2,19 +2,43 @@ use crate::aoc::{read_chars, Answers, FileCharIterator, Solution};
 use std::error::Error;
 use std::num::ParseIntError;
 
-pub struct Day09;
+#[derive(Debug)]
+pub struct Day09 {
+    blocks: Vec<Block>,
+}
+
+impl Day09 {
+    pub fn new() -> Day09 {
+        Day09 { blocks: Vec::new() }
+    }
+}
 
 impl Solution for Day09 {
     type Part1 = usize;
     type Part2 = usize;
 
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let chars = read_chars("./data/day09.txt")?;
-        let blocks = parse_input(chars)?;
-        let mut blocks1 = blocks.clone();
+        for (i, c) in chars.flatten().enumerate() {
+            if c == '\n' {
+                break;
+            }
+            let j = i / 2;
+            let size = c.to_string().parse::<usize>()?;
+            if i % 2 == 0 {
+                self.blocks.append(&mut vec![Block::File(j); size]);
+            } else {
+                self.blocks.append(&mut vec![Block::Empty; size]);
+            }
+        }
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+        let mut blocks1 = self.blocks.clone();
         compact_by_block(&mut blocks1);
         let checksum1 = compute_checksum(&blocks1);
-        let mut blocks2 = blocks.clone();
+        let mut blocks2 = self.blocks.clone();
         compact_by_chunk(&mut blocks2);
         let checksum2 = compute_checksum(&blocks2);
         Answers::ok(Some(checksum1), Some(checksum2))
@@ -25,23 +49,6 @@ impl Solution for Day09 {
 enum Block {
     File(usize),
     Empty,
-}
-
-fn parse_input(chars: FileCharIterator) -> Result<Vec<Block>, ParseIntError> {
-    let mut blocks = Vec::new();
-    for (i, c) in chars.flatten().enumerate() {
-        if c == '\n' {
-            break;
-        }
-        let j = i / 2;
-        let size = c.to_string().parse::<usize>()?;
-        if i % 2 == 0 {
-            blocks.append(&mut vec![Block::File(j); size]);
-        } else {
-            blocks.append(&mut vec![Block::Empty; size]);
-        }
-    }
-    Ok(blocks)
 }
 
 fn compact_by_block(blocks: &mut Vec<Block>) {

@@ -33,18 +33,24 @@ impl<T: Display, U: Display> Answers<T, U> {
 pub trait Solution {
     type Part1: Display;
     type Part2: Display;
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>>;
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>>;
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>>;
 }
 
 pub trait SolutionWrapper {
-    fn solve_string(&self) -> Result<String, Box<dyn Error>>;
+    fn parse_input_wrapper(&mut self) -> Result<(), Box<dyn Error>>;
+    fn solve_string(&mut self) -> Result<String, Box<dyn Error>>;
 }
 
 impl<T> SolutionWrapper for T
 where
     T: Solution,
 {
-    fn solve_string(&self) -> Result<String, Box<dyn Error>> {
+    fn parse_input_wrapper(&mut self) -> Result<(), Box<dyn Error>> {
+        self.parse_input()?;
+        Ok(())
+    }
+    fn solve_string(&mut self) -> Result<String, Box<dyn Error>> {
         Ok(format!("{}", self.solve()?))
     }
 }

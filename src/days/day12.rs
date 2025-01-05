@@ -2,62 +2,19 @@ use crate::aoc::{read_lines, Answers, Solution};
 use std::collections::HashSet;
 use std::error::Error;
 
-pub struct Day12;
-
-impl Solution for Day12 {
-    type Part1 = i32;
-    type Part2 = i32;
-
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
-        let lines = read_lines("./data/day12.txt")?;
-        let grid = lines
-            .flatten()
-            .map(|s| s.chars().collect::<Vec<char>>())
-            .collect::<Vec<Vec<char>>>();
-        let map = Map::new(grid);
-        let mut regions = Vec::new();
-        let mut already_found: HashSet<(i32, i32)> = HashSet::new();
-        for y in 0..map.height {
-            for x in 0..map.width {
-                let pos = (x, y);
-                if !already_found.contains(&pos) {
-                    let mut region = Region::new(map.grid[y as usize][x as usize]);
-                    map.find_region(pos, &mut region);
-                    already_found.extend(&region.plots);
-                    regions.push(region);
-                }
-            }
-        }
-        let mut total_cost = 0;
-        for region in &regions {
-            total_cost += (region.plots.len() as i32) * region.perimeter;
-        }
-        let mut discount_cost = 0;
-        for region in &regions {
-            discount_cost += (region.plots.len() as i32) * region.count_sides();
-        }
-        Answers::ok(Some(total_cost), Some(discount_cost))
-    }
-}
-
 #[derive(Debug)]
-struct Map {
+pub struct Day12 {
     grid: Vec<Vec<char>>,
     width: i32,
     height: i32,
 }
 
-impl Map {
-    fn new(grid: Vec<Vec<char>>) -> Map {
-        let height = grid.len() as i32;
-        let mut width = 0;
-        if height > 0 {
-            width = grid[0].len() as i32;
-        }
-        Map {
-            grid,
-            height,
-            width,
+impl Day12 {
+    pub fn new() -> Day12 {
+        Day12 {
+            grid: Vec::new(),
+            width: 0,
+            height: 0,
         }
     }
 
@@ -106,6 +63,49 @@ impl Map {
                 region.perimeter += 1;
             }
         }
+    }
+}
+
+impl Solution for Day12 {
+    type Part1 = i32;
+    type Part2 = i32;
+
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        let lines = read_lines("./data/day12.txt")?;
+        self.grid
+            .extend(lines.flatten().map(|s| s.chars().collect::<Vec<char>>()));
+        self.height = self.grid.len() as i32;
+        self.width = if self.height > 0 {
+            self.grid[0].len()
+        } else {
+            0
+        } as i32;
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+        let mut regions = Vec::new();
+        let mut already_found: HashSet<(i32, i32)> = HashSet::new();
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let pos = (x, y);
+                if !already_found.contains(&pos) {
+                    let mut region = Region::new(self.grid[y as usize][x as usize]);
+                    self.find_region(pos, &mut region);
+                    already_found.extend(&region.plots);
+                    regions.push(region);
+                }
+            }
+        }
+        let mut total_cost = 0;
+        for region in &regions {
+            total_cost += (region.plots.len() as i32) * region.perimeter;
+        }
+        let mut discount_cost = 0;
+        for region in &regions {
+            discount_cost += (region.plots.len() as i32) * region.count_sides();
+        }
+        Answers::ok(Some(total_cost), Some(discount_cost))
     }
 }
 

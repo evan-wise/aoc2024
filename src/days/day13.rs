@@ -1,77 +1,85 @@
 use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
-use std::path::Path;
 
-pub struct Day13;
+#[derive(Debug)]
+pub struct Day13 {
+    claw_machines: Vec<ClawMachine>,
+}
+
+impl Day13 {
+    pub fn new() -> Day13 {
+        Day13 {
+            claw_machines: Vec::new(),
+        }
+    }
+}
 
 impl Solution for Day13 {
     type Part1 = i64;
     type Part2 = i64;
 
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
-        let mut claw_machines = parse_input("./data/day13.txt")?;
-        let cost1 = compute_cost(&claw_machines);
-        rescale_prizes(&mut claw_machines);
-        let cost2 = compute_cost(&claw_machines);
-        Answers::ok(Some(cost1), Some(cost2))
-    }
-}
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        let lines = read_lines("./data/day13.txt")?;
+        let mut maybe_button_a: Option<Button> = None;
+        let mut maybe_button_b: Option<Button> = None;
+        let mut maybe_prize: Option<Prize> = None;
+        for line in lines.flatten() {
+            if line == "" {
+                match (maybe_button_a, maybe_button_b, maybe_prize) {
+                    (Some(button_a), Some(button_b), Some(prize)) => {
+                        self.claw_machines.push(ClawMachine {
+                            button_a,
+                            button_b,
+                            prize,
+                        });
+                        maybe_button_a = None;
+                        maybe_button_b = None;
+                        maybe_prize = None;
+                    }
+                    _ => {
+                        return Err("invalid claw machine".into());
+                    }
+                }
+                continue;
+            }
 
-fn parse_input<P: AsRef<Path>>(path: P) -> Result<Vec<ClawMachine>, Box<dyn Error>> {
-    let mut claw_machines = Vec::new();
-    let mut maybe_button_a: Option<Button> = None;
-    let mut maybe_button_b: Option<Button> = None;
-    let mut maybe_prize: Option<Prize> = None;
-    let lines = read_lines(path)?;
-    for line in lines.flatten() {
-        if line == "" {
-            match (maybe_button_a, maybe_button_b, maybe_prize) {
-                (Some(button_a), Some(button_b), Some(prize)) => {
-                    claw_machines.push(ClawMachine {
-                        button_a,
-                        button_b,
-                        prize,
-                    });
-                    maybe_button_a = None;
-                    maybe_button_b = None;
-                    maybe_prize = None;
+            let parts = line.split(": ").collect::<Vec<&str>>();
+            match parts[0] {
+                "Button A" => {
+                    maybe_button_a = Some(Button::parse(parts[1])?);
+                }
+                "Button B" => {
+                    maybe_button_b = Some(Button::parse(parts[1])?);
+                }
+                "Prize" => {
+                    maybe_prize = Some(Prize::parse(parts[1])?);
                 }
                 _ => {
-                    return Err("invalid claw machine".into());
+                    return Err("invalid line".into());
                 }
             }
-            continue;
         }
-
-        let parts = line.split(": ").collect::<Vec<&str>>();
-        match parts[0] {
-            "Button A" => {
-                maybe_button_a = Some(Button::parse(parts[1])?);
-            }
-            "Button B" => {
-                maybe_button_b = Some(Button::parse(parts[1])?);
-            }
-            "Prize" => {
-                maybe_prize = Some(Prize::parse(parts[1])?);
+        match (maybe_button_a, maybe_button_b, maybe_prize) {
+            (Some(button_a), Some(button_b), Some(prize)) => {
+                self.claw_machines.push(ClawMachine {
+                    button_a,
+                    button_b,
+                    prize,
+                });
             }
             _ => {
-                return Err("invalid line".into());
+                return Err("invalid claw machine".into());
             }
         }
+        Ok(())
     }
-    match (maybe_button_a, maybe_button_b, maybe_prize) {
-        (Some(button_a), Some(button_b), Some(prize)) => {
-            claw_machines.push(ClawMachine {
-                button_a,
-                button_b,
-                prize,
-            });
-        }
-        _ => {
-            return Err("invalid claw machine".into());
-        }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+        let cost1 = compute_cost(&self.claw_machines);
+        rescale_prizes(&mut self.claw_machines);
+        let cost2 = compute_cost(&self.claw_machines);
+        Answers::ok(Some(cost1), Some(cost2))
     }
-    Ok(claw_machines)
 }
 
 fn compute_cost(claw_machines: &Vec<ClawMachine>) -> i64 {

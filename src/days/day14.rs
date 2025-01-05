@@ -2,19 +2,40 @@ use crate::aoc::{read_lines, Answers, Solution};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::hash::Hash;
-use std::path::Path;
 
-pub struct Day14;
+#[derive(Debug)]
+pub struct Day14 {
+    robots: Vec<Robot>,
+}
+
+impl Day14 {
+    pub fn new() -> Day14 {
+        Day14 { robots: Vec::new() }
+    }
+}
 
 impl Solution for Day14 {
     type Part1 = i32;
     type Part2 = i32;
 
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
-        let robots = parse_input("./data/day14.txt")?;
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        let lines = read_lines("./data/day14.txt")?;
+        for line in lines.flatten() {
+            let parts = line.split_whitespace().collect::<Vec<&str>>();
+            if parts.len() != 2 {
+                return Err("invalid line".into());
+            }
+            let pos = parse_position(parts[0])?;
+            let vel = parse_velocity(parts[1])?;
+            self.robots.push(Robot { pos, vel });
+        }
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let dim = (101, 103);
         let mut count_by_quadrant: HashMap<Quadrant, i32> = HashMap::new();
-        for final_pos in robots.iter().map(|r| r.final_pos(100, dim)) {
+        for final_pos in self.robots.iter().map(|r| r.final_pos(100, dim)) {
             let quad = Quadrant::get(final_pos, dim);
             if let Some(count) = count_by_quadrant.get(&quad) {
                 count_by_quadrant.insert(quad, count + 1);
@@ -31,28 +52,13 @@ impl Solution for Day14 {
         }
         let mut num_seconds = 1;
         loop {
-            if no_dupes(robots.iter().map(|r| r.final_pos(num_seconds, dim))) {
+            if no_dupes(self.robots.iter().map(|r| r.final_pos(num_seconds, dim))) {
                 break;
             }
             num_seconds += 1;
         }
         Answers::ok(Some(safety_score), Some(num_seconds))
     }
-}
-
-fn parse_input<P: AsRef<Path>>(path: P) -> Result<Vec<Robot>, Box<dyn Error>> {
-    let mut robots = Vec::new();
-    let lines = read_lines(path)?;
-    for line in lines.flatten() {
-        let parts = line.split_whitespace().collect::<Vec<&str>>();
-        if parts.len() != 2 {
-            return Err("invalid line".into());
-        }
-        let pos = parse_position(parts[0])?;
-        let vel = parse_velocity(parts[1])?;
-        robots.push(Robot { pos, vel });
-    }
-    Ok(robots)
 }
 
 fn parse_position(raw: &str) -> Result<(i32, i32), Box<dyn Error>> {

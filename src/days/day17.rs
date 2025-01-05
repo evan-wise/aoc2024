@@ -1,54 +1,61 @@
 use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
 use std::num::ParseIntError;
-use std::path::Path;
 
-pub struct Day17;
+pub struct Day17 {
+    computer: Computer,
+}
+
+impl Day17 {
+    pub fn new() -> Day17 {
+        Day17 {
+            computer: Computer::new(),
+        }
+    }
+}
 
 impl Solution for Day17 {
     type Part1 = String;
     type Part2 = u128;
 
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
-        let mut computer = parse_input("./data/day17.txt")?;
-        let output = computer.run()?;
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        let lines = read_lines("./data/day17.txt")?;
+        for line in lines.flatten() {
+            if line == "" {
+                continue;
+            }
+            let parts = line.split(": ").collect::<Vec<&str>>();
+            if parts.len() != 2 {
+                return Err("invalid line".into());
+            }
+            match parts[0] {
+                "Register A" => self.computer.a = parts[1].parse::<u128>()?,
+                "Register B" => self.computer.b = parts[1].parse::<u128>()?,
+                "Register C" => self.computer.c = parts[1].parse::<u128>()?,
+                "Program" => {
+                    self.computer.instructions = parts[1]
+                        .split(",")
+                        .map(|i| i.parse::<u8>())
+                        .collect::<Result<Vec<u8>, ParseIntError>>()?
+                }
+                _ => {
+                    return Err("invalid line".into());
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+        let output = self.computer.run()?;
         let output_str = output
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
             .join(",");
-        let quine_a = backtrack(&computer)?;
+        let quine_a = backtrack(&self.computer)?;
         Answers::ok(Some(output_str), Some(quine_a))
     }
-}
-
-fn parse_input<P: AsRef<Path>>(filename: P) -> Result<Computer, Box<dyn Error>> {
-    let lines = read_lines(filename)?;
-    let mut computer = Computer::new();
-    for line in lines.flatten() {
-        if line == "" {
-            continue;
-        }
-        let parts = line.split(": ").collect::<Vec<&str>>();
-        if parts.len() != 2 {
-            return Err("invalid line".into());
-        }
-        match parts[0] {
-            "Register A" => computer.a = parts[1].parse::<u128>()?,
-            "Register B" => computer.b = parts[1].parse::<u128>()?,
-            "Register C" => computer.c = parts[1].parse::<u128>()?,
-            "Program" => {
-                computer.instructions = parts[1]
-                    .split(",")
-                    .map(|i| i.parse::<u8>())
-                    .collect::<Result<Vec<u8>, ParseIntError>>()?
-            }
-            _ => {
-                return Err("invalid line".into());
-            }
-        }
-    }
-    Ok(computer)
 }
 
 // Explanation:

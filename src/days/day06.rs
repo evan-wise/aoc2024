@@ -1,91 +1,45 @@
-use crate::aoc::{read_chars, Answers, FileCharIterator, Solution};
+use crate::aoc::{read_chars, Answers, Direction, Position, Solution};
 use std::collections::HashSet;
 use std::error::Error;
 
-pub struct Day06;
-
-impl Solution for Day06 {
-    type Part1 = i32;
-    type Part2 = usize;
-
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
-        let chars = read_chars("./data/day06.txt")?;
-
-        let mut state = parse_input(chars)?;
-
-        Answers::ok(Some(do_part1(&mut state)?), Some(do_part2(&state)?))
-    }
-}
-
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-#[derive(Clone, PartialEq, Debug)]
-enum CellState {
-    Unvisited,
-    Visited,
-    Obstacle,
-}
-
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
-struct Guard {
-    pub position: (usize, usize),
-    pub direction: Direction,
-}
-
-impl Guard {
-    pub fn new() -> Guard {
-        Guard {
-            position: (0, 0),
-            direction: Direction::Up,
-        }
-    }
-}
-
-struct StepResult {
-    cell: CellState,
-    loop_detected: bool,
-}
-
-struct State {
-    map: Vec<Vec<CellState>>,
+#[derive(Debug)]
+pub struct Day06 {
+    map: Vec<Vec<Cell>>,
     guard: Guard,
     history: Vec<Guard>,
     history_lookup: HashSet<Guard>,
+    visited: HashSet<Position>,
+    loops: HashSet<Position>,
 }
 
-impl State {
-    pub fn new(map: Vec<Vec<CellState>>) -> State {
-        State {
-            map,
+impl Day06 {
+    pub fn new() -> Day06 {
+        Day06 {
+            map: Vec::new(),
             guard: Guard::new(),
             history: Vec::new(),
             history_lookup: HashSet::new(),
+            visited: HashSet::new(),
+            loops: HashSet::new(),
         }
     }
 
-    pub fn map(&self) -> &Vec<Vec<CellState>> {
-        &self.map
+    pub fn reset(&mut self) {
+        self.history = Vec::new();
+        self.history_lookup = HashSet::new();
+        self.visited = HashSet::new();
+        self.guard = Guard::new();
     }
 
-    pub fn history(&self) -> &Vec<Guard> {
-        &self.history
-    }
-
-    pub fn place_guard(&mut self, position: (usize, usize)) -> &Guard {
+    fn place_guard(&mut self, position: Position) -> &Guard {
         self.guard.position = position;
-        self.map[position.0][position.1] = CellState::Visited;
-        self.history.push(self.guard.clone());
-        self.history_lookup.insert(self.guard.clone());
+        self.visited.insert(position);
+        self.history.push(self.guard);
+        self.history_lookup.insert(self.guard);
         &self.guard
     }
 
-    pub fn check_bounds(&self) -> bool {
+    fn check_bounds(&self) -> bool {
         let (i, j) = self.guard.position;
         let height = self.map.len();
         if height == 0 {
@@ -103,154 +57,137 @@ impl State {
         }
     }
 
-    pub fn do_step(&mut self) -> Result<StepResult, Box<dyn Error>> {
+    fn step(&mut self) -> Option<bool> {
         if !self.check_bounds() {
-            return Err("out of bounds".into());
+            return None
         }
         let (i, j) = self.guard.position;
-        let (k, l, dir) = match self.guard.direction {
+        let (k, l, turn) = match self.guard.direction {
             Direction::Up => (i - 1, j, Direction::Right),
             Direction::Down => (i + 1, j, Direction::Left),
             Direction::Left => (i, j - 1, Direction::Up),
             Direction::Right => (i, j + 1, Direction::Down),
         };
         match self.map[k][l] {
-            CellState::Obstacle => {
-                self.guard.direction = dir;
-                self.history.push(self.guard.clone());
-                self.history_lookup.insert(self.guard.clone());
-                Ok(StepResult {
-                    cell: CellState::Obstacle,
-                    loop_detected: false,
-                })
+            Cell::Obstacle => {
+                self.guard.direction = turn;
+                self.history.push(self.guard);
+                Some(!self.history_lookup.insert(self.guard))
             }
-            CellState::Unvisited => {
+            Cell::Empty => {
                 self.guard.position = (k, l);
-                self.map[k][l] = CellState::Visited;
-                self.history.push(self.guard.clone());
-                self.history_lookup.insert(self.guard.clone());
-                Ok(StepResult {
-                    cell: CellState::Unvisited,
-                    loop_detected: false,
-                })
-            }
-            CellState::Visited => {
-                self.guard.position = (k, l);
-                self.history.push(self.guard.clone());
-                let loop_detected = !self.history_lookup.insert(self.guard.clone());
-                Ok(StepResult {
-                    cell: CellState::Visited,
-                    loop_detected,
-                })
+                self.history.push(self.guard);
+                self.visited.insert(self.guard.position);
+                Some(!self.history_lookup.insert(self.guard))
             }
         }
     }
 
-    pub fn fresh_map(&self) -> Vec<Vec<CellState>> {
-        let mut new_map = Vec::new();
-        for row in &self.map {
-            let mut new_row = Vec::new();
-            for cell in row {
-                match cell {
-                    CellState::Unvisited | CellState::Visited => {
-                        new_row.push(CellState::Unvisited);
-                    }
-                    CellState::Obstacle => {
-                        new_row.push(CellState::Obstacle);
-                    }
-                }
-            }
-            new_map.push(new_row);
-        }
-        new_map
-    }
-}
-
-fn parse_input(chars: FileCharIterator) -> Result<State, Box<dyn Error>> {
-    let mut map = Vec::new();
-    let mut row = Vec::new();
-    let mut i = 0;
-    let mut j = 0;
-    let mut position = (0, 0);
-    for char in chars.flatten() {
-        match char {
-            '.' => {
-                row.push(CellState::Unvisited);
-                j += 1;
-            }
-            '#' => {
-                row.push(CellState::Obstacle);
-                j += 1;
-            }
-            '^' => {
-                row.push(CellState::Unvisited);
-                position = (i, j);
-                j += 1;
-            }
-            '\n' => {
-                map.push(row);
-                row = Vec::new();
-                i += 1;
-                j = 0;
-            }
-            _ => {
-                return Err("invalid character".into());
-            }
-        }
-    }
-    let mut state = State::new(map);
-    state.place_guard(position);
-    Ok(state)
-}
-
-fn do_part1(state: &mut State) -> Result<i32, Box<dyn Error>> {
-    let mut num_positions = 1;
-    loop {
-        match state.do_step() {
-            Ok(step_result) => {
-                if step_result.cell == CellState::Unvisited {
-                    num_positions += 1;
-                }
-            }
-            Err(_) => break,
-        }
-    }
-    Ok(num_positions)
-}
-
-fn do_part2(state: &State) -> Result<usize, Box<dyn Error>> {
-    let mut loops = HashSet::new();
-    let (_, history) = state.history().split_last().unwrap();
-    for guard in history {
-        let (i, j) = guard.position;
-        let (k, l) = match guard.direction {
-            Direction::Up => (i - 1, j),
-            Direction::Down => (i + 1, j),
-            Direction::Left => (i, j - 1),
-            Direction::Right => (i, j + 1),
-        };
-        if loops.contains(&(k, l)) {
-            continue;
-        }
-        if state.map()[k][l] == CellState::Obstacle {
-            continue;
-        }
-        let mut map = state.fresh_map();
-        let mut temp_state;
-        map[k][l] = CellState::Obstacle;
-        temp_state = State::new(map);
-        temp_state.place_guard(history[0].position);
+    fn simulate(&mut self) -> SimulationResult {
         loop {
-            match temp_state.do_step() {
-                Ok(step_result) => {
-                    if step_result.loop_detected {
-                        loops.insert((k, l));
-                        break;
-                    }
+            if let Some(loop_detected) = self.step() {
+                if loop_detected {
+                    return SimulationResult::Loop;
                 }
-                Err(_) => break,
+            } else {
+                break;
             }
         }
+        SimulationResult::Exit
     }
-    Ok(loops.len())
+}
+
+impl Solution for Day06 {
+    type Part1 = usize;
+    type Part2 = usize;
+
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        let mut row = Vec::new();
+        let mut i = 0;
+        let mut j = 0;
+        let chars = read_chars("./data/day06.txt")?;
+        for char in chars.flatten() {
+            match char {
+                '.' => {
+                    row.push(Cell::Empty);
+                    j += 1;
+                }
+                '#' => {
+                    row.push(Cell::Obstacle);
+                    j += 1;
+                }
+                '^' => {
+                    row.push(Cell::Empty);
+                    self.place_guard((i, j));
+                    j += 1;
+                }
+                '\n' => {
+                    self.map.push(row);
+                    row = Vec::new();
+                    i += 1;
+                    j = 0;
+                }
+                _ => {
+                    return Err("invalid character".into());
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+        self.simulate();
+        let part1 = self.visited.len();
+
+        let history = self.history[0..self.history.len() - 1].to_vec();
+        for guard in &history {
+            let (i, j) = guard.position;
+            let (k, l) = match guard.direction {
+                Direction::Up => (i - 1, j),
+                Direction::Down => (i + 1, j),
+                Direction::Left => (i, j - 1),
+                Direction::Right => (i, j + 1),
+            };
+            if self.loops.contains(&(k, l)) || self.map[k][l] == Cell::Obstacle {
+                continue;
+            }
+            self.reset();
+            self.place_guard(history[0].position);
+            self.map[k][l] = Cell::Obstacle;
+            if let SimulationResult::Loop = self.simulate() {
+                self.loops.insert((k, l));
+            }
+            self.map[k][l] = Cell::Empty;
+        }
+        let part2 = self.loops.len();
+
+        Answers::ok(Some(part1), Some(part2))
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Debug)]
+enum Cell {
+    Empty,
+    Obstacle,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+struct Guard {
+    position: Position,
+    direction: Direction,
+}
+
+impl Guard {
+    fn new() -> Guard {
+        Guard {
+            position: (0, 0),
+            direction: Direction::Up,
+        }
+    }
+}
+
+#[derive(Debug)]
+enum SimulationResult {
+    Exit,
+    Loop,
 }

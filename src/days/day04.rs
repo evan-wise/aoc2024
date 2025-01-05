@@ -1,23 +1,38 @@
 use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
 
-pub struct Day04;
+#[derive(Debug)]
+pub struct Day04 {
+    wordsearch: Vec<Vec<u8>>,
+}
+
+impl Day04 {
+    pub fn new() -> Day04 {
+        Day04 {
+            wordsearch: Vec::new(),
+        }
+    }
+}
 
 impl Solution for Day04 {
     type Part1 = i32;
     type Part2 = i32;
 
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        let lines = read_lines("./data/day04.txt")?;
+        self.wordsearch
+            .extend(lines.flatten().map(|s| s.into_bytes()));
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let mut xmas_total = 0;
         let mut cross_total = 0;
-        if let Ok(lines) = read_lines("./data/day04.txt") {
-            let wordsearch: Vec<Vec<u8>> = lines.flatten().map(|s| s.into_bytes()).collect();
-            for (i, s) in wordsearch.iter().enumerate() {
-                for (j, _c) in s.iter().enumerate() {
-                    xmas_total += count_xmas(i, j, &wordsearch);
-                    if check_cross(i, j, &wordsearch) {
-                        cross_total += 1;
-                    }
+        for (i, s) in self.wordsearch.iter().enumerate() {
+            for (j, _c) in s.iter().enumerate() {
+                xmas_total += count_xmas(i, j, &self.wordsearch);
+                if check_cross(i, j, &self.wordsearch) {
+                    cross_total += 1;
                 }
             }
         }

@@ -2,28 +2,48 @@ use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
 use std::num::ParseIntError;
 
-pub struct Day02;
+#[derive(Debug)]
+pub struct Day02 {
+    reports: Vec<Vec<i32>>,
+}
+
+impl Day02 {
+    pub fn new() -> Day02 {
+        Day02 {
+            reports: Vec::new(),
+        }
+    }
+}
 
 impl Solution for Day02 {
     type Part1 = i32;
     type Part2 = i32;
 
-    fn solve(&self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        let lines = read_lines("./data/day02.txt")?;
+        for line in lines.flatten() {
+            self.reports.push(
+                line.split(" ")
+                    .map(|n| n.parse::<i32>())
+                    .collect::<Result<Vec<_>, _>>()?,
+            );
+        }
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers<Self::Part1, Self::Part2>, Box<dyn Error>> {
         let mut count = 0;
         let mut dampener_count = 0;
-        if let Ok(lines) = read_lines("./data/day02.txt") {
-            for line in lines.flatten() {
-                let nums = parse_line(&line)?;
-                if check_safety(&nums) {
-                    count += 1;
-                    dampener_count += 1;
-                } else {
-                    for i in 0..nums.len() {
-                        let reduced_nums = [&nums[..i], &nums[i + 1..]].concat();
-                        if check_safety(&reduced_nums) {
-                            dampener_count += 1;
-                            break;
-                        }
+        for nums in &self.reports {
+            if check_safety(&nums) {
+                count += 1;
+                dampener_count += 1;
+            } else {
+                for i in 0..nums.len() {
+                    let reduced_nums = [&nums[..i], &nums[i + 1..]].concat();
+                    if check_safety(&reduced_nums) {
+                        dampener_count += 1;
+                        break;
                     }
                 }
             }
