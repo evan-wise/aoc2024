@@ -1,26 +1,122 @@
-use crate::aoc::{read_chars, Answers, Direction, Position, Solution};
+use crate::aoc::{read_chars, Answers, Direction, Map, Position, Solution};
 use std::collections::HashSet;
 use std::error::Error;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct Day06 {
-    map: Vec<Vec<Cell>>,
+    grid: Vec<Vec<Cell>>,
+    width: usize,
+    height: usize,
     guard: Guard,
     history: Vec<Guard>,
     history_lookup: HashSet<Guard>,
     visited: HashSet<Position>,
     loops: HashSet<Position>,
+    exits: HashSet<Position>,
+}
+
+impl Solution for Day06 {
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
+        let mut row = Vec::new();
+        let mut y = 0;
+        let mut x = 0;
+        let chars = read_chars("./data/day06.txt")?;
+        for char in chars.flatten() {
+            match char {
+                '.' => {
+                    row.push(Cell::Empty);
+                    x += 1;
+                }
+                '#' => {
+                    row.push(Cell::Obstacle);
+                    x += 1;
+                }
+                '^' => {
+                    row.push(Cell::Empty);
+                    self.place_guard((x, y));
+                    x += 1;
+                }
+                '\n' => {
+                    self.grid.push(row);
+                    row = Vec::new();
+                    y += 1;
+                    x = 0;
+                }
+                _ => {
+                    return Err("invalid character".into());
+                }
+            }
+        }
+        self.height = self.grid.len();
+        self.width = if self.height > 0 { self.grid[0].len() } else { 0 };
+        Ok(())
+    }
+
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
+        self.simulate();
+        let part1 = self.visited.len();
+
+        let history = self.history[0..self.history.len() - 1].to_vec();
+
+        for guard in &history {
+            if let Some((pos, _)) = guard.direction.go(self, guard.position) {
+                let (x, y) = pos;
+
+                if self.exits.contains(&pos) || self.loops.contains(&pos) || self.grid[y][x] == Cell::Obstacle {
+                    continue;
+                }
+
+                self.reset();
+                self.place_guard(history[0].position);
+
+                self.grid[y][x] = Cell::Obstacle;
+                if let SimulationResult::Loop = self.simulate() {
+                    self.loops.insert(pos);
+                } else {
+                    self.exits.insert(pos);
+                }
+                self.grid[y][x] = Cell::Empty;
+            }
+        }
+        let part2 = self.loops.len();
+
+        Ok(Answers::from(Some(part1), Some(part2)))
+    }
+}
+
+impl Map for Day06 {
+    type Cell = Cell;
+
+    fn get(&self, pos: Position) -> Option<Self::Cell> {
+        let (x, y) = pos;
+        if x >= self.width || y >= self.height {
+            return None;
+        }
+        Some(self.grid[y][x])
+    }
+
+    fn width(&self) -> usize {
+        self.width
+    }
+
+    fn height(&self) -> usize {
+        self.height
+    }
 }
 
 impl Day06 {
     pub fn new() -> Day06 {
         Day06 {
-            map: Vec::new(),
+            grid: Vec::new(),
+            width: 0,
+            height: 0,
             guard: Guard::new(),
             history: Vec::new(),
             history_lookup: HashSet::new(),
             visited: HashSet::new(),
             loops: HashSet::new(),
+            exits: HashSet::new(),
         }
     }
 
@@ -39,133 +135,46 @@ impl Day06 {
         &self.guard
     }
 
-    fn check_bounds(&self) -> bool {
-        let (i, j) = self.guard.position;
-        let height = self.map.len();
-        if height == 0 {
-            return false;
-        }
-        let width = self.map[0].len();
-        if width == 0 {
-            return false;
-        }
-        match self.guard.direction {
-            Direction::Up => i != 0,
-            Direction::Down => i < height - 1,
-            Direction::Left => j != 0,
-            Direction::Right => j < width - 1,
-        }
-    }
-
     fn step(&mut self) -> Option<bool> {
-        if !self.check_bounds() {
-            return None;
-        }
-        let (i, j) = self.guard.position;
-        let (k, l, turn) = match self.guard.direction {
-            Direction::Up => (i - 1, j, Direction::Right),
-            Direction::Down => (i + 1, j, Direction::Left),
-            Direction::Left => (i, j - 1, Direction::Up),
-            Direction::Right => (i, j + 1, Direction::Down),
-        };
-        match self.map[k][l] {
-            Cell::Obstacle => {
-                self.guard.direction = turn;
+        match self.guard.direction.go(self, self.guard.position) {
+            Some((_, Cell::Obstacle)) => {
+                self.guard.direction = self.guard.direction.right();
                 self.history.push(self.guard);
                 Some(!self.history_lookup.insert(self.guard))
             }
-            Cell::Empty => {
-                self.guard.position = (k, l);
+            Some((pos, Cell::Empty)) => {
+                self.guard.position = pos;
                 self.history.push(self.guard);
                 self.visited.insert(self.guard.position);
                 Some(!self.history_lookup.insert(self.guard))
             }
+            None => None,
         }
     }
 
     fn simulate(&mut self) -> SimulationResult {
-        loop {
-            if let Some(loop_detected) = self.step() {
-                if loop_detected {
-                    return SimulationResult::Loop;
-                }
-            } else {
-                break;
+        while let Some(loop_detected) = self.step() {
+            if loop_detected {
+                return SimulationResult::Loop;
             }
         }
         SimulationResult::Exit
     }
 }
 
-impl Solution for Day06 {
-    fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
-        let mut row = Vec::new();
-        let mut i = 0;
-        let mut j = 0;
-        let chars = read_chars("./data/day06.txt")?;
-        for char in chars.flatten() {
-            match char {
-                '.' => {
-                    row.push(Cell::Empty);
-                    j += 1;
-                }
-                '#' => {
-                    row.push(Cell::Obstacle);
-                    j += 1;
-                }
-                '^' => {
-                    row.push(Cell::Empty);
-                    self.place_guard((i, j));
-                    j += 1;
-                }
-                '\n' => {
-                    self.map.push(row);
-                    row = Vec::new();
-                    i += 1;
-                    j = 0;
-                }
-                _ => {
-                    return Err("invalid character".into());
-                }
-            }
-        }
-        Ok(())
-    }
-
-    fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        self.simulate();
-        let part1 = self.visited.len();
-
-        let history = self.history[0..self.history.len() - 1].to_vec();
-        for guard in &history {
-            let (i, j) = guard.position;
-            let (k, l) = match guard.direction {
-                Direction::Up => (i - 1, j),
-                Direction::Down => (i + 1, j),
-                Direction::Left => (i, j - 1),
-                Direction::Right => (i, j + 1),
-            };
-            if self.loops.contains(&(k, l)) || self.map[k][l] == Cell::Obstacle {
-                continue;
-            }
-            self.reset();
-            self.place_guard(history[0].position);
-            self.map[k][l] = Cell::Obstacle;
-            if let SimulationResult::Loop = self.simulate() {
-                self.loops.insert((k, l));
-            }
-            self.map[k][l] = Cell::Empty;
-        }
-        let part2 = self.loops.len();
-
-        Ok(Answers::from(Some(part1), Some(part2)))
-    }
-}
-
 #[derive(Copy, Clone, PartialEq, Debug)]
-enum Cell {
+pub enum Cell {
     Empty,
     Obstacle,
+}
+
+impl Display for Cell {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Empty => write!(f, "."),
+            Self::Obstacle => write!(f, "#"),
+        }
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
