@@ -1,5 +1,5 @@
 use crate::aoc::{read_chars, Answers, Direction, Map, Position, Solution};
-use std::collections::HashSet;
+use rustc_hash::FxHashSet;
 use std::error::Error;
 use std::fmt::Display;
 
@@ -10,10 +10,9 @@ pub struct Day06 {
     height: usize,
     guard: Guard,
     history: Vec<Guard>,
-    history_lookup: HashSet<Guard>,
-    visited: HashSet<Position>,
-    loops: HashSet<Position>,
-    exits: HashSet<Position>,
+    visited: FxHashSet<Position>,
+    seen: FxHashSet<Guard>,
+    loops: FxHashSet<Position>,
 }
 
 impl Solution for Day06 {
@@ -54,27 +53,23 @@ impl Solution for Day06 {
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        self.simulate();
+        self.simulate(SimulationType::History);
         let part1 = self.visited.len();
-
         let history = self.history[0..self.history.len() - 1].to_vec();
 
         for guard in &history {
             if let Some((pos, _)) = guard.direction.go(self, guard.position) {
                 let (x, y) = pos;
 
-                if self.exits.contains(&pos) || self.loops.contains(&pos) || self.grid[y][x] == Cell::Obstacle {
+                if self.loops.contains(&pos) || self.grid[y][x] == Cell::Obstacle {
                     continue;
                 }
 
-                self.reset();
                 self.place_guard(history[0].position);
 
                 self.grid[y][x] = Cell::Obstacle;
-                if let SimulationResult::Loop = self.simulate() {
+                if let SimulationResult::Loop = self.simulate(SimulationType::Test) {
                     self.loops.insert(pos);
-                } else {
-                    self.exits.insert(pos);
                 }
                 self.grid[y][x] = Cell::Empty;
             }
@@ -113,48 +108,47 @@ impl Day06 {
             height: 0,
             guard: Guard::new(),
             history: Vec::new(),
-            history_lookup: HashSet::new(),
-            visited: HashSet::new(),
-            loops: HashSet::new(),
-            exits: HashSet::new(),
+            visited: FxHashSet::default(),
+            seen: FxHashSet::default(),
+            loops: FxHashSet::default(),
         }
     }
 
-    pub fn reset(&mut self) {
-        self.history = Vec::new();
-        self.history_lookup = HashSet::new();
-        self.visited = HashSet::new();
-        self.guard = Guard::new();
-    }
-
     fn place_guard(&mut self, position: Position) -> &Guard {
+        self.guard = Guard::new();
         self.guard.position = position;
-        self.visited.insert(position);
-        self.history.push(self.guard);
-        self.history_lookup.insert(self.guard);
         &self.guard
     }
 
-    fn step(&mut self) -> Option<bool> {
+    fn step(&mut self) -> Option<(Guard, Cell)> {
         match self.guard.direction.go(self, self.guard.position) {
             Some((_, Cell::Obstacle)) => {
                 self.guard.direction = self.guard.direction.right();
-                self.history.push(self.guard);
-                Some(!self.history_lookup.insert(self.guard))
+                Some((self.guard, Cell::Obstacle))
             }
             Some((pos, Cell::Empty)) => {
                 self.guard.position = pos;
-                self.history.push(self.guard);
-                self.visited.insert(self.guard.position);
-                Some(!self.history_lookup.insert(self.guard))
+                Some((self.guard, Cell::Empty))
             }
             None => None,
         }
     }
 
-    fn simulate(&mut self) -> SimulationResult {
-        while let Some(loop_detected) = self.step() {
-            if loop_detected {
+    fn simulate(&mut self, simulation_type: SimulationType) -> SimulationResult {
+        self.seen.clear();
+        self.seen.insert(self.guard);
+        if let SimulationType::History = simulation_type {
+            self.history = Vec::from([self.guard]);
+            self.visited.clear();
+            self.visited.insert(self.guard.position);
+        }
+        while let Some((guard, _)) = self.step() {
+            if let SimulationType::History = simulation_type {
+                self.history.push(guard);
+                self.visited.insert(guard.position);
+            }
+
+            if !self.seen.insert(guard) {
                 return SimulationResult::Loop;
             }
         }
@@ -190,6 +184,13 @@ impl Guard {
             direction: Direction::Up,
         }
     }
+}
+
+
+#[derive(Debug)]
+enum SimulationType {
+    History,
+    Test,
 }
 
 #[derive(Debug)]
