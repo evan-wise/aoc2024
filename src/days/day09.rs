@@ -1,47 +1,57 @@
-use crate::aoc::{read_chars, Answers,  Solution};
+use crate::aoc::{read_chars, Answers, Solution};
+use std::collections::VecDeque;
 use std::error::Error;
+use std::usize;
 
 #[derive(Debug)]
 pub struct Day09 {
     blocks: Vec<Block>,
+    rle: Vec<(Block, usize, usize)>,
 }
 
 impl Day09 {
     pub fn new() -> Day09 {
-        Day09 { blocks: Vec::new() }
+        Day09 { blocks: Vec::new(), rle: Vec::new() }
     }
 }
 
 impl Solution for Day09 {
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let chars = read_chars("./data/day09.txt")?;
+        let mut buff = VecDeque::new();
         for (i, c) in chars.flatten().enumerate() {
             if c == '\n' {
+                if i % 2 != 0 {
+                    let last = buff.len() - 1;
+                    self.rle.push((Block::File((i - 1) / 2), buff[last], 0));
+                }
                 break;
             }
-            let j = i / 2;
             let size = c.to_string().parse::<usize>()?;
+            buff.push_back(size);
+            if buff.len() > 2 {
+                buff.pop_front();
+            }
             if i % 2 == 0 {
-                self.blocks.append(&mut vec![Block::File(j); size]);
+                self.blocks.append(&mut vec![Block::File(i / 2); size]);
             } else {
-                self.blocks.append(&mut vec![Block::Empty; size]);
+                self.blocks.append(&mut vec![Block::Empty; buff[1]]);
+                self.rle.push((Block::File(i / 2), buff[0], buff[1]));
             }
         }
         Ok(())
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        let mut blocks1 = self.blocks.clone();
-        compact_by_block(&mut blocks1);
-        let checksum1 = compute_checksum(&blocks1);
-        let mut blocks2 = self.blocks.clone();
-        compact_by_chunk(&mut blocks2);
-        let checksum2 = compute_checksum(&blocks2);
+        compact_by_block(&mut self.blocks);
+        let checksum1 = compute_checksum(&self.blocks);
+        compact_by_chunk2(&mut self.rle);
+        let checksum2 = compute_checksum(&expand_rle(&self.rle));
         Ok(Answers::from(Some(checksum1), Some(checksum2)))
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 enum Block {
     File(usize),
     Empty,
@@ -65,91 +75,46 @@ fn compact_by_block(blocks: &mut Vec<Block>) {
     }
 }
 
-fn compact_by_chunk(blocks: &mut Vec<Block>) {
-    let mut end = blocks.len();
-    while let Some(file_chunk) = find_file_chunk(&blocks, end) {
-        let mut start = 0;
-        while let Some(empty_chunk) = find_empty_chunk(&blocks, start) {
-            if empty_chunk.0 > file_chunk.0 {
-                break;
-            }
-            if empty_chunk.1 >= file_chunk.1 {
-                for i in 0..file_chunk.1 {
-                    let swap = blocks[file_chunk.0 + i];
-                    blocks[file_chunk.0 + i] = blocks[empty_chunk.0 + i];
-                    blocks[empty_chunk.0 + i] = swap;
-                }
-                break;
-            } else {
-                start = empty_chunk.0 + empty_chunk.1;
-            }
+fn expand_rle(rle: &Vec<(Block, usize, usize)>) -> Vec<Block> {
+    let mut blocks: Vec<Block> = Vec::new();
+    for (block, file_size, empty_size) in rle {
+        blocks.append(&mut vec![*block; *file_size]);
+        blocks.append(&mut vec![Block::Empty; *empty_size]);
+    }
+    blocks
+}
+
+fn compact_by_chunk2(rle: &mut Vec<(Block, usize, usize)>) {
+    let mut stack = (0..rle.len()).collect::<Vec<_>>();
+    let n = rle.len();
+    let mut i = n - 1;
+    while let Some(id) = stack.pop() {
+        while rle[i].0 != Block::File(id) {
+            i -= 1;
         }
-        end = file_chunk.0;
+        let (_, file_size, empty_size) = rle[i];
+        if let Some(j) = find_empty_space(rle, file_size, i) {
+            rle.remove(i);
+            let slot_size = rle[j].2;
+            rle[j].2 = 0;
+            rle.insert(j+1, (Block::File(id), file_size, slot_size - file_size));
+            rle[i].2 += file_size + empty_size;
+        } 
     }
 }
 
-fn find_empty_chunk(blocks: &Vec<Block>, start: usize) -> Option<(usize, usize)> {
-    if start >= blocks.len() {
-        return None;
-    }
-    let mut i = start;
-    let mut j = start;
-    while let Block::File(_) = blocks[i] {
+fn find_empty_space(rle: &Vec<(Block, usize, usize)>, size: usize, max: usize) -> Option<usize> {
+    let mut i = 0;
+    for (_, _, empty_size) in rle {
+        if i >= max {
+            break;
+        }
+        if *empty_size >= size {
+            return Some(i);
+        }
         i += 1;
-        j += 1;
-        if i == blocks.len() {
-            break;
-        }
     }
-    if i == blocks.len() {
-        return None;
-    }
-    while let Block::Empty = blocks[j] {
-        j += 1;
-        if j == blocks.len() {
-            break;
-        }
-    }
-    Some((i, j - i))
-}
-
-fn find_file_chunk(blocks: &Vec<Block>, end: usize) -> Option<(usize, usize)> {
-    if end > blocks.len() {
-        return None;
-    }
-    if end == 0 {
-        return None;
-    }
-    let mut i = end;
-    let mut j = end;
-    let mut maybe_file_id: Option<usize> = None;
-    while let Block::Empty = blocks[i - 1] {
-        i -= 1;
-        j -= 1;
-        if i == 0 {
-            break;
-        }
-    }
-    while let Block::File(id) = blocks[j - 1] {
-        if let None = maybe_file_id {
-            maybe_file_id = Some(id);
-        }
-
-        let file_id = maybe_file_id.unwrap();
-
-        if file_id != id {
-            break;
-        }
-
-        j -= 1;
-        if j == 0 {
-            break;
-        }
-    }
-    if i == 0 {
-        return None;
-    }
-    Some((j, i - j))
+    None
 }
 
 fn compute_checksum(blocks: &Vec<Block>) -> usize {
