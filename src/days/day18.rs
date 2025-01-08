@@ -1,6 +1,7 @@
 use crate::aoc::{read_lines, Answers, Direction, Map, Position, Solution};
 use std::cmp::Reverse;
-use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::collections::BinaryHeap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::error::Error;
 use std::fmt::Display;
 
@@ -9,7 +10,7 @@ pub struct Day18 {
     bytes: Vec<Position>,
     num_bytes: usize,
     size: usize,
-    corrupted: HashSet<Position>,
+    corrupted: FxHashSet<Position>,
 }
 
 impl Day18 {
@@ -18,7 +19,7 @@ impl Day18 {
             bytes: Vec::new(),
             num_bytes: 0,
             size: 0,
-            corrupted: HashSet::new(),
+            corrupted: FxHashSet::default(),
         }
     }
 
@@ -26,8 +27,8 @@ impl Day18 {
         let start = (0, 0);
         let end = (self.size - 1, self.size - 1);
         let mut heap = BinaryHeap::from([(Reverse(0), start)]);
-        let mut visited = HashSet::new();
-        let mut low_dists = HashMap::new();
+        let mut visited = FxHashSet::default();
+        let mut low_dists = FxHashMap::default();
         while let Some((Reverse(dist), pos)) = heap.pop() {
             let prev_dist = *low_dists.get(&pos).unwrap_or(&usize::MAX);
             if dist >= prev_dist {
