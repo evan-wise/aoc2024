@@ -1,7 +1,7 @@
 use crate::aoc::{read_lines, Answers, Direction, Map, Position, Solution};
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
-use rustc_hash::{FxHashMap, FxHashSet};
 use std::error::Error;
 use std::fmt::Display;
 

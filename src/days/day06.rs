@@ -48,7 +48,11 @@ impl Solution for Day06 {
             }
         }
         self.height = self.grid.len();
-        self.width = if self.height > 0 { self.grid[0].len() } else { 0 };
+        self.width = if self.height > 0 {
+            self.grid[0].len()
+        } else {
+            0
+        };
         Ok(())
     }
 
@@ -185,7 +189,6 @@ impl Guard {
         }
     }
 }
-
 
 #[derive(Debug)]
 enum SimulationType {

@@ -1,7 +1,7 @@
 use crate::aoc::{Answers, Solution};
+use rustc_hash::FxHashSet;
 use std::error::Error;
 use std::fs::read_to_string;
-use rustc_hash::FxHashSet;
 
 pub struct Day19 {
     available: FxHashSet<String>,
@@ -26,8 +26,12 @@ impl Solution for Day19 {
         }
         self.available
             .extend(parts[0].split(", ").map(|t| t.to_string()));
-        self.patterns
-            .extend(parts[1].split("\n").filter(|p| *p != "").map(|p| p.to_string()));
+        self.patterns.extend(
+            parts[1]
+                .split("\n")
+                .filter(|p| *p != "")
+                .map(|p| p.to_string()),
+        );
         Ok(())
     }
 

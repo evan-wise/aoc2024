@@ -11,7 +11,10 @@ pub struct Day09 {
 
 impl Day09 {
     pub fn new() -> Day09 {
-        Day09 { blocks: Vec::new(), rle: Vec::new() }
+        Day09 {
+            blocks: Vec::new(),
+            rle: Vec::new(),
+        }
     }
 }
 
@@ -97,9 +100,9 @@ fn compact_by_chunk2(rle: &mut Vec<(Block, usize, usize)>) {
             rle.remove(i);
             let slot_size = rle[j].2;
             rle[j].2 = 0;
-            rle.insert(j+1, (Block::File(id), file_size, slot_size - file_size));
+            rle.insert(j + 1, (Block::File(id), file_size, slot_size - file_size));
             rle[i].2 += file_size + empty_size;
-        } 
+        }
     }
 }
 
