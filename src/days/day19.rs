@@ -43,7 +43,7 @@ impl Solution for Day19 {
 }
 
 fn find_recipe(pattern: &str, available: &FxHashSet<String>) -> bool {
-    let mut stack = available.iter().map(|t| (&pattern[..], &t[..])).collect::<Vec<_>>();
+    let mut stack: Vec<(&str, &str)> = available.iter().map(|t| (&pattern[..], &t[..])).collect();
     if pattern == "" {
         return true;
     }
@@ -57,7 +57,7 @@ fn find_recipe(pattern: &str, available: &FxHashSet<String>) -> bool {
             let prefix = &pattern[0..l];
             let reduced = &pattern[l..];
             if prefix == towel {
-                stack.extend(available.iter().map(|t| (reduced, &t[..])).collect::<Vec<_>>());
+                stack.extend(available.iter().map(|t| (reduced, &t[..])));
             }
         }
     }
