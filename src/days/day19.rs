@@ -51,7 +51,12 @@ impl Solution for Day19 {
 }
 
 impl Day19 {
-    fn count_recipes(&self, pattern: &str, available: &FxHashSet<String>, memos: &mut FxHashMap<String, usize>) -> usize {
+    fn count_recipes(
+        &self,
+        pattern: &str,
+        available: &FxHashSet<String>,
+        memos: &mut FxHashMap<String, usize>,
+    ) -> usize {
         if pattern == "" {
             return 1;
         }
@@ -66,7 +71,8 @@ impl Day19 {
             let prefix = &pattern[0..l];
             let reduced = &pattern[l..];
             if prefix == towel {
-                *memos.entry(pattern.to_string()).or_insert(0) += self.count_recipes(reduced, available, memos);
+                *memos.entry(pattern.to_string()).or_insert(0) +=
+                    self.count_recipes(reduced, available, memos);
             }
         }
         if let Some(count) = memos.get(pattern) {

@@ -27,30 +27,24 @@ impl Day18 {
         let start = (0, 0);
         let end = (self.size - 1, self.size - 1);
         let mut heap = BinaryHeap::from([(Reverse(0), start)]);
-        let mut visited = FxHashSet::default();
         let mut low_dists = FxHashMap::default();
         while let Some((Reverse(dist), pos)) = heap.pop() {
             let prev_dist = *low_dists.get(&pos).unwrap_or(&usize::MAX);
             if dist >= prev_dist {
                 continue;
             }
-            low_dists.insert(pos, dist);
-
-            if !visited.insert(pos) {
+            if let Some(_) = low_dists.insert(pos, dist) {
                 continue;
             }
-
             if pos == end {
                 continue;
             }
-
             for d in Direction::all() {
                 if let Some(((x, y), Cell::Safe)) = d.go(self, pos) {
                     heap.push((Reverse(dist + 1), (x, y)));
                 }
             }
         }
-
         if low_dists.contains_key(&end) {
             Some(low_dists[&end])
         } else {
