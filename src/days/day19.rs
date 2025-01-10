@@ -63,15 +63,10 @@ impl Day19 {
             if pattern.len() < l {
                 continue;
             }
-            let p = pattern.to_string();
             let prefix = &pattern[0..l];
             let reduced = &pattern[l..];
             if prefix == towel {
-                if let Some(c) = memos.get_mut(reduced) {
-                    *memos.entry(p).or_insert(0) += *c;
-                } else {
-                    *memos.entry(p).or_insert(0) += self.count_recipes(reduced, available, memos);
-                }
+                *memos.entry(pattern.to_string()).or_insert(0) += self.count_recipes(reduced, available, memos);
             }
         }
         if let Some(count) = memos.get(pattern) {
