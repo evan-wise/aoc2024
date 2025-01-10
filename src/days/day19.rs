@@ -40,7 +40,7 @@ impl Solution for Day19 {
         let mut num_ways = 0;
         for pattern in &self.patterns {
             let mut memos = FxHashMap::default();
-            let recipes = self.count_recipes(pattern, &self.available, &mut memos);
+            let recipes = count_recipes(pattern, &self.available, &mut memos);
             if recipes > 0 {
                 num_possible += 1;
             }
@@ -50,35 +50,32 @@ impl Solution for Day19 {
     }
 }
 
-impl Day19 {
-    fn count_recipes(
-        &self,
-        pattern: &str,
-        available: &FxHashSet<String>,
-        memos: &mut FxHashMap<String, usize>,
-    ) -> usize {
-        if pattern == "" {
-            return 1;
+fn count_recipes(
+    pattern: &str,
+    available: &FxHashSet<String>,
+    memos: &mut FxHashMap<String, usize>,
+) -> usize {
+    if pattern == "" {
+        return 1;
+    }
+    if let Some(c) = memos.get(pattern) {
+        return *c;
+    }
+    for towel in available {
+        let l = towel[..].len();
+        if pattern.len() < l {
+            continue;
         }
-        if let Some(c) = memos.get(pattern) {
-            return *c;
+        let prefix = &pattern[0..l];
+        let reduced = &pattern[l..];
+        if prefix == towel {
+            *memos.entry(pattern.to_string()).or_insert(0) +=
+                count_recipes(reduced, available, memos);
         }
-        for towel in available {
-            let l = towel[..].len();
-            if pattern.len() < l {
-                continue;
-            }
-            let prefix = &pattern[0..l];
-            let reduced = &pattern[l..];
-            if prefix == towel {
-                *memos.entry(pattern.to_string()).or_insert(0) +=
-                    self.count_recipes(reduced, available, memos);
-            }
-        }
-        if let Some(count) = memos.get(pattern) {
-            *count
-        } else {
-            0
-        }
+    }
+    if let Some(count) = memos.get(pattern) {
+        *count
+    } else {
+        0
     }
 }
