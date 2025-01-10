@@ -1,6 +1,5 @@
 use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
-use std::num::ParseIntError;
 
 #[derive(Debug)]
 pub struct Day02 {
@@ -47,15 +46,6 @@ impl Solution for Day02 {
         }
         Ok(Answers::from(Some(count), Some(dampener_count)))
     }
-}
-
-fn parse_line(line: &str) -> Result<Vec<i32>, ParseIntError> {
-    let mut nums = Vec::new();
-    for raw in line.split(" ") {
-        let num = raw.parse::<i32>()?;
-        nums.push(num);
-    }
-    Ok(nums)
 }
 
 fn check_safety(nums: &Vec<i32>) -> bool {

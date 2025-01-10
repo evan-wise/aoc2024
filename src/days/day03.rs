@@ -41,7 +41,7 @@ fn compute_total(chars: &Vec<char>, handle_dos: bool) -> Result<i32, Box<dyn Err
     let mut state = State::Seeking;
     let mut temp = String::new();
     let mut first_num = 0;
-    let mut second_num = 0;
+    let mut second_num;
     let mut total = 0;
     for char in chars {
         match state {
