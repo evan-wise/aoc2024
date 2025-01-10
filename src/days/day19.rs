@@ -1,5 +1,5 @@
 use crate::aoc::{Answers, Solution};
-use rustc_hash::FxHashSet;
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::error::Error;
 use std::fs::read_to_string;
 
@@ -36,34 +36,48 @@ impl Solution for Day19 {
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        let mut count = 0;
+        let mut num_possible = 0;
+        let mut num_ways = 0;
         for pattern in &self.patterns {
-            if find_recipe(pattern, &self.available) {
-                count += 1;
+            let mut memos = FxHashMap::default();
+            let recipes = self.count_recipes(pattern, &self.available, &mut memos);
+            if recipes > 0 {
+                num_possible += 1;
             }
+            num_ways += recipes;
         }
-        Ok(Answers::from::<_, String>(Some(count), None))
+        Ok(Answers::from(Some(num_possible), Some(num_ways)))
     }
 }
 
-fn find_recipe(pattern: &str, available: &FxHashSet<String>) -> bool {
-    let mut stack: Vec<(&str, &str)> = available.iter().map(|t| (&pattern[..], &t[..])).collect();
-    if pattern == "" {
-        return true;
-    }
-    while let Some((pattern, towel)) = stack.pop() {
-        let l = towel.len();
-        if pattern.len() == l {
-            if pattern == towel {
-                return true;
+impl Day19 {
+    fn count_recipes(&self, pattern: &str, available: &FxHashSet<String>, memos: &mut FxHashMap<String, usize>) -> usize {
+        if pattern == "" {
+            return 1;
+        }
+        if let Some(c) = memos.get(pattern) {
+            return *c;
+        }
+        for towel in available {
+            let l = towel[..].len();
+            if pattern.len() < l {
+                continue;
             }
-        } else if pattern.len() > l {
+            let p = pattern.to_string();
             let prefix = &pattern[0..l];
             let reduced = &pattern[l..];
             if prefix == towel {
-                stack.extend(available.iter().map(|t| (reduced, &t[..])));
+                if let Some(c) = memos.get_mut(reduced) {
+                    *memos.entry(p).or_insert(0) += *c;
+                } else {
+                    *memos.entry(p).or_insert(0) += self.count_recipes(reduced, available, memos);
+                }
             }
         }
+        if let Some(count) = memos.get(pattern) {
+            *count
+        } else {
+            0
+        }
     }
-    false
 }
