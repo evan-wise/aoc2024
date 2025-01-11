@@ -61,9 +61,11 @@ impl Solution for Day18 {
         for i in self.num_bytes..self.bytes.len() {
             let byte = self.bytes[i];
             self.corrupted.insert(byte);
-            if let (None, _) = self.minimal_path(Cell::Safe, start, end) {
-                byte_str = format!("{},{}", byte.0, byte.1);
-                break;
+            if let Some(true) = self.chokepoint(byte) {
+                if let (None, _) = self.minimal_path(Cell::Safe, start, end) {
+                    byte_str = format!("{},{}", byte.0, byte.1);
+                    break;
+                }
             }
         }
         Ok(Answers::from(dist, Some(byte_str)))
@@ -91,6 +93,59 @@ impl Map for Day18 {
         } else {
             Some(Cell::Safe)
         }
+    }
+
+}
+
+impl Day18 {
+    fn chokepoint(&self, pos: Position) -> Option<bool> {
+        let (x, y) = pos;
+        if x >= self.size || y >= self.size {
+            return None;
+        }
+        let t = if y == 0 {
+            true
+        } else {
+            self.corrupted.contains(&(x, y - 1))
+        };
+        let b = if y == self.size - 1 {
+            true 
+        } else {
+            self.corrupted.contains(&(x, y + 1))
+        };
+        let l = if x == 0 {
+            true
+        } else {
+            self.corrupted.contains(&(x - 1, y))
+        };
+        let r = if x == self.size - 1 {
+            true
+        } else {
+            self.corrupted.contains(&(x + 1, y))
+        };
+        let tl = if x == 0 || y == 0 {
+            true
+        } else {
+            self.corrupted.contains(&(x - 1, y - 1))
+        };
+        let tr = if x == self.size - 1 || y == 0 {
+            true
+        } else {
+            self.corrupted.contains(&(x + 1, y - 1))
+        };
+        let bl = if x == 0 || y == self.size - 1 {
+            true
+        } else {
+            self.corrupted.contains(&(x - 1, y + 1))
+        };
+        let br = if x == self.size - 1 || y == self.size - 1 {
+            true
+        } else {
+            self.corrupted.contains(&(x + 1, y + 1))
+        };
+
+        Some((t && b) || (l && r) || (tl && br) || (tr && bl) ||
+            (tl && tr) || (tr && br) || (br && bl) || (bl && tl))
     }
 }
 
