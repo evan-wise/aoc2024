@@ -133,10 +133,7 @@ pub trait Map {
         open: Self::Cell,
         start: Position,
         end: Position,
-    ) -> (
-        Option<usize>,
-        FxHashMap<Position, usize>
-    ) {
+    ) -> (Option<usize>, FxHashMap<Position, usize>) {
         let mut heap = BinaryHeap::from([(Reverse(0), start)]);
         let mut lows = FxHashMap::default();
         while let Some((Reverse(dist), pos)) = heap.pop() {
@@ -154,10 +151,7 @@ pub trait Map {
             for d in Direction::all() {
                 if let Some(((x, y), cell)) = self.go(d, pos) {
                     if cell == open {
-                        heap.push((
-                            Reverse(dist + 1),
-                            (x, y)
-                        ));
+                        heap.push((Reverse(dist + 1), (x, y)));
                     }
                 }
             }
@@ -199,11 +193,7 @@ pub trait Map {
             for d in Direction::all() {
                 if let Some(((x, y), cell)) = self.go(d, pos) {
                     if cell == open {
-                        heap.push((
-                            Reverse(dist + 1),
-                            (x, y),
-                            Some(pos),
-                        ));
+                        heap.push((Reverse(dist + 1), (x, y), Some(pos)));
                     }
                 }
             }

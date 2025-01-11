@@ -52,7 +52,9 @@ impl Solution for Day20 {
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        if let (Some(base), _, backtracks) = self.backtrack_minimal_path(Cell::Empty, self.start, self.end) {
+        if let (Some(base), _, backtracks) =
+            self.backtrack_minimal_path(Cell::Empty, self.start, self.end)
+        {
             let visited = backtrack(self.end, &backtracks);
             Ok(Answers::from::<_, _>(Some(base), Some(visited.len())))
         } else {
