@@ -42,6 +42,10 @@ impl Answers {
         Answers { part1, part2 }
     }
 
+    pub fn part1<T: Display>(part1: T) -> Answers {
+        Answers { part1: Some(format!("{part1}")), part2: None }
+    }
+
     pub fn none() -> Answers {
         Answers { part1: None, part2: None }
     }
