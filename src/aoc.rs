@@ -41,6 +41,10 @@ impl Answers {
         };
         Answers { part1, part2 }
     }
+
+    pub fn none() -> Answers {
+        Answers { part1: None, part2: None }
+    }
 }
 
 pub trait Solution {
