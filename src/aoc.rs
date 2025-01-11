@@ -1,3 +1,6 @@
+use rustc_hash::{FxHashMap, FxHashSet};
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::fs::File;
@@ -117,49 +120,132 @@ impl Direction {
             Self::Right => Self::Up,
         }
     }
+}
 
-    pub fn go<T: Map>(&self, map: &T, pos: Position) -> Option<(Position, T::Cell)> {
+pub trait Map {
+    type Cell: Display + Eq;
+    fn width(&self) -> usize;
+    fn height(&self) -> usize;
+    fn get(&self, pos: Position) -> Option<Self::Cell>;
+
+    fn minimal_path(
+        &self,
+        open: Self::Cell,
+        start: Position,
+        end: Position,
+    ) -> (
+        Option<usize>,
+        FxHashMap<Position, usize>
+    ) {
+        let mut heap = BinaryHeap::from([(Reverse(0), start)]);
+        let mut lows = FxHashMap::default();
+        while let Some((Reverse(dist), pos)) = heap.pop() {
+            let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
+            if dist > prev_dist {
+                continue;
+            }
+            if prev_dist < usize::MAX {
+                continue;
+            }
+            lows.insert(pos, dist);
+            if pos == end {
+                continue;
+            }
+            for d in Direction::all() {
+                if let Some(((x, y), cell)) = self.go(d, pos) {
+                    if cell == open {
+                        heap.push((
+                            Reverse(dist + 1),
+                            (x, y)
+                        ));
+                    }
+                }
+            }
+        }
+        (lows.get(&end).copied(), lows)
+    }
+
+    fn backtrack_minimal_path(
+        &self,
+        open: Self::Cell,
+        start: Position,
+        end: Position,
+    ) -> (
+        Option<usize>,
+        FxHashMap<Position, usize>,
+        FxHashMap<Position, FxHashSet<Position>>,
+    ) {
+        let mut heap = BinaryHeap::from([(Reverse(0), start, None)]);
+        let mut lows = FxHashMap::default();
+        let mut backtracks = FxHashMap::default();
+        while let Some((Reverse(dist), pos, maybe_prev)) = heap.pop() {
+            let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
+            if dist > prev_dist {
+                continue;
+            }
+            if let Some(prev) = maybe_prev {
+                backtracks
+                    .entry(pos)
+                    .or_insert_with(FxHashSet::default)
+                    .insert(prev);
+            }
+            if prev_dist < usize::MAX {
+                continue;
+            }
+            lows.insert(pos, dist);
+            if pos == end {
+                continue;
+            }
+            for d in Direction::all() {
+                if let Some(((x, y), cell)) = self.go(d, pos) {
+                    if cell == open {
+                        heap.push((
+                            Reverse(dist + 1),
+                            (x, y),
+                            Some(pos),
+                        ));
+                    }
+                }
+            }
+        }
+        (lows.get(&end).copied(), lows, backtracks)
+    }
+
+    fn go(&self, dir: Direction, pos: Position) -> Option<(Position, Self::Cell)> {
         let (x, y) = pos;
-        let width = map.width();
-        let height = map.height();
-        let new = match self {
-            Self::Up => {
+        let width = self.width();
+        let height = self.height();
+        let new = match dir {
+            Direction::Up => {
                 if y == 0 {
                     return None;
                 }
                 (x, y - 1)
             }
-            Self::Down => {
+            Direction::Down => {
                 if y == height - 1 {
                     return None;
                 }
                 (x, y + 1)
             }
-            Self::Left => {
+            Direction::Left => {
                 if x == 0 {
                     return None;
                 }
                 (x - 1, y)
             }
-            Self::Right => {
+            Direction::Right => {
                 if x == width - 1 {
                     return None;
                 }
                 (x + 1, y)
             }
         };
-        if let Some(state) = map.get(new) {
+        if let Some(state) = self.get(new) {
             return Some((new, state));
         }
         None
     }
-}
-
-pub trait Map {
-    type Cell: Display;
-    fn width(&self) -> usize;
-    fn height(&self) -> usize;
-    fn get(&self, pos: Position) -> Option<Self::Cell>;
 }
 
 pub struct MapDisplay<'a, T: Map>(pub &'a T);

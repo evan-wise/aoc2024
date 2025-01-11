@@ -52,10 +52,12 @@ impl Solution for Day20 {
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        if let Some(time) = self.minimal_path(self.start, self.end) {
-            println!("{time}");
+        if let (Some(base), _, backtracks) = self.backtrack_minimal_path(Cell::Empty, self.start, self.end) {
+            let visited = backtrack(self.end, &backtracks);
+            Ok(Answers::from::<_, _>(Some(base), Some(visited.len())))
+        } else {
+            Ok(Answers::from::<String, String>(None, None))
         }
-        Ok(Answers::from::<String, String>(None, None))
     }
 }
 
@@ -78,36 +80,22 @@ impl Map for Day20 {
     }
 }
 
-impl Day20 {
-    fn minimal_path(&self, start: Position, end: Position) -> Option<usize> {
-        let mut heap = BinaryHeap::from([(Reverse(0), start)]);
-        let mut low_dists = FxHashMap::default();
-        while let Some((Reverse(dist), pos)) = heap.pop() {
-            let prev_dist = *low_dists.get(&pos).unwrap_or(&usize::MAX);
-            if dist >= prev_dist {
-                continue;
-            }
-            if let Some(_) = low_dists.insert(pos, dist) {
-                continue;
-            }
-            if pos == end {
-                continue;
-            }
-            for d in Direction::all() {
-                if let Some(((x, y), Cell::Empty)) = d.go(self, pos) {
-                    heap.push((Reverse(dist + 1), (x, y)));
-                }
-            }
-        }
-        if low_dists.contains_key(&end) {
-            Some(low_dists[&end])
-        } else {
-            None
+fn backtrack(
+    from: Position,
+    backtracks: &FxHashMap<Position, FxHashSet<Position>>,
+) -> FxHashSet<Position> {
+    let mut visited = FxHashSet::default();
+    let mut stack = vec![from];
+    let empty = FxHashSet::default();
+    while let Some(pos) = stack.pop() {
+        if visited.insert(pos) {
+            stack.extend(backtracks.get(&pos).unwrap_or(&empty));
         }
     }
+    visited
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum Cell {
     Empty,
     Wall,

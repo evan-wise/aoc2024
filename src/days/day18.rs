@@ -22,35 +22,6 @@ impl Day18 {
             corrupted: FxHashSet::default(),
         }
     }
-
-    fn minimal_path(&self) -> Option<usize> {
-        let start = (0, 0);
-        let end = (self.size - 1, self.size - 1);
-        let mut heap = BinaryHeap::from([(Reverse(0), start)]);
-        let mut low_dists = FxHashMap::default();
-        while let Some((Reverse(dist), pos)) = heap.pop() {
-            let prev_dist = *low_dists.get(&pos).unwrap_or(&usize::MAX);
-            if dist >= prev_dist {
-                continue;
-            }
-            if let Some(_) = low_dists.insert(pos, dist) {
-                continue;
-            }
-            if pos == end {
-                continue;
-            }
-            for d in Direction::all() {
-                if let Some(((x, y), Cell::Safe)) = d.go(self, pos) {
-                    heap.push((Reverse(dist + 1), (x, y)));
-                }
-            }
-        }
-        if low_dists.contains_key(&end) {
-            Some(low_dists[&end])
-        } else {
-            None
-        }
-    }
 }
 
 impl Solution for Day18 {
@@ -85,12 +56,14 @@ impl Solution for Day18 {
         for i in 0..self.num_bytes {
             self.corrupted.insert(self.bytes[i]);
         }
-        let dist = self.minimal_path();
+        let start = (0, 0);
+        let end = (self.size - 1, self.size - 1);
+        let (dist, _) = self.minimal_path(Cell::Safe, start, end);
         let mut byte_str = String::new();
         for i in self.num_bytes..self.bytes.len() {
             let byte = self.bytes[i];
             self.corrupted.insert(byte);
-            if let None = self.minimal_path() {
+            if let (None, _) = self.minimal_path(Cell::Safe, start, end) {
                 byte_str = format!("{},{}", byte.0, byte.1);
                 break;
             }
@@ -123,7 +96,7 @@ impl Map for Day18 {
     }
 }
 
-#[derive(Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum Cell {
     Safe,
     Corrupted,

@@ -62,7 +62,7 @@ impl Solution for Day06 {
         let history = self.history[0..self.history.len() - 1].to_vec();
 
         for guard in &history {
-            if let Some((pos, _)) = guard.direction.go(self, guard.position) {
+            if let Some((pos, _)) = self.go(guard.direction, guard.position) {
                 let (x, y) = pos;
 
                 if self.loops.contains(&pos) || self.grid[y][x] == Cell::Obstacle {
@@ -125,7 +125,7 @@ impl Day06 {
     }
 
     fn step(&mut self) -> Option<(Guard, Cell)> {
-        match self.guard.direction.go(self, self.guard.position) {
+        match self.go(self.guard.direction, self.guard.position) {
             Some((_, Cell::Obstacle)) => {
                 self.guard.direction = self.guard.direction.right();
                 Some((self.guard, Cell::Obstacle))
@@ -160,7 +160,7 @@ impl Day06 {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Cell {
     Empty,
     Obstacle,
