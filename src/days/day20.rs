@@ -30,7 +30,11 @@ impl Solution for Day20 {
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let filename = "./data/day20.txt";
         let lines = read_lines(filename)?;
-        self.live = if filename.contains("/data/") { true } else { false };
+        self.live = if filename.contains("/data/") {
+            true
+        } else {
+            false
+        };
         for (y, line) in lines.flatten().enumerate() {
             self.grid.push(
                 line.chars()

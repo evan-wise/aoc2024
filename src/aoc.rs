@@ -6,10 +6,28 @@ use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines, Read};
 use std::path::Path;
+use std::time::{Duration, Instant};
 
+pub trait Solution {
+    fn parse_input(&mut self) -> Result<(), Box<dyn Error>>;
+    fn solve(&mut self) -> Result<Answers, Box<dyn Error>>;
+    fn run(&mut self, num: usize) -> Result<SolutionData, Box<dyn Error>> {
+        let parse_timer = Instant::now();
+        self.parse_input()?;
+        let parse_time = parse_timer.elapsed();
+
+        let solution_timer = Instant::now();
+        let answers = self.solve()?;
+        let solution_time = solution_timer.elapsed();
+
+        Ok(SolutionData::new(num, answers, parse_time, solution_time))
+    }
+}
+
+#[derive(Debug)]
 pub struct Answers {
-    part1: Option<String>,
-    part2: Option<String>,
+    pub part1: Option<String>,
+    pub part2: Option<String>,
 }
 
 impl Display for Answers {
@@ -43,17 +61,114 @@ impl Answers {
     }
 
     pub fn part1<T: Display>(part1: T) -> Answers {
-        Answers { part1: Some(format!("{part1}")), part2: None }
+        Answers {
+            part1: Some(format!("{part1}")),
+            part2: None,
+        }
     }
 
     pub fn none() -> Answers {
-        Answers { part1: None, part2: None }
+        Answers {
+            part1: None,
+            part2: None,
+        }
+    }
+
+    pub fn complete(&self) -> bool {
+        match (&self.part1, &self.part2) {
+            (Some(_), Some(_)) => true,
+            _ => false,
+        }
     }
 }
 
-pub trait Solution {
-    fn parse_input(&mut self) -> Result<(), Box<dyn Error>>;
-    fn solve(&mut self) -> Result<Answers, Box<dyn Error>>;
+#[derive(Debug)]
+pub struct SolutionData {
+    pub num: usize,
+    pub answers: Answers,
+    pub parse_time: Duration,
+    pub solve_time: Duration,
+}
+
+impl SolutionData {
+    pub fn new(
+        num: usize,
+        answers: Answers,
+        parse_time: Duration,
+        solve_time: Duration,
+    ) -> SolutionData {
+        SolutionData {
+            num,
+            answers,
+            parse_time,
+            solve_time,
+        }
+    }
+}
+
+impl Display for SolutionData {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        let parse_millis = self.parse_time.as_micros() as f64 / 1000.0;
+        let solve_millis = self.solve_time.as_micros() as f64 / 1000.0;
+        write!(f, "~- DAY {:0>2} -~\n", self.num)?;
+        write!(
+            f,
+            "Parse: {parse_millis:.3}ms, Solve: {solve_millis:.3}ms\n"
+        )?;
+        write!(f, "{}\n", self.answers)
+    }
+}
+
+pub struct Statistics<'a> {
+    pub total_time: Duration,
+    pub complete: Vec<&'a SolutionData>,
+    pub avg: f64,
+    pub stddev: f64,
+}
+
+impl Statistics<'_> {
+    pub fn calc(data: &Vec<SolutionData>) -> Statistics {
+        let total_time = data.iter().fold(Duration::from_secs(0), |a, s| {
+            a + s.parse_time + s.solve_time
+        });
+        let complete: Vec<_> = data.iter().filter(|s| s.answers.complete()).collect();
+        let completed = complete.len();
+        let avg = complete
+            .iter()
+            .fold(Duration::from_secs(0), |a, s| {
+                a + s.parse_time + s.solve_time
+            })
+            .as_micros() as f64
+            / completed as f64;
+        let stddev = complete
+            .iter()
+            .fold(0.0, |a, s| {
+                a + (s.parse_time.as_micros() as f64 + s.solve_time.as_micros() as f64 - avg)
+                    .powf(2.0)
+            })
+            .sqrt()
+            / completed as f64;
+        Statistics {
+            total_time,
+            complete,
+            avg,
+            stddev,
+        }
+    }
+}
+
+impl Display for Statistics<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "~- STATISTICS -~\n")?;
+        write!(
+            f,
+            "T = {}ms, n = {}, μ = {:.2}ms, σ = {:.2}ms",
+            self.total_time.as_millis(),
+            self.complete.len(),
+            self.avg / 1000.0,
+            self.stddev / 1000.0
+        )
+    }
 }
 
 pub struct FileCharIterator {

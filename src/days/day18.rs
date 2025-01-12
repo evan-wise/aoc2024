@@ -94,7 +94,6 @@ impl Map for Day18 {
             Some(Cell::Safe)
         }
     }
-
 }
 
 impl Day18 {
@@ -109,7 +108,7 @@ impl Day18 {
             self.corrupted.contains(&(x, y - 1))
         };
         let b = if y == self.size - 1 {
-            true 
+            true
         } else {
             self.corrupted.contains(&(x, y + 1))
         };
@@ -144,8 +143,16 @@ impl Day18 {
             self.corrupted.contains(&(x + 1, y + 1))
         };
 
-        Some((t && b) || (l && r) || (tl && br) || (tr && bl) ||
-            (tl && tr) || (tr && br) || (br && bl) || (bl && tl))
+        Some(
+            (t && b)
+                || (l && r)
+                || (tl && br)
+                || (tr && bl)
+                || (tl && tr)
+                || (tr && br)
+                || (br && bl)
+                || (bl && tl),
+        )
     }
 }
 
