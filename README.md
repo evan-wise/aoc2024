@@ -17,7 +17,8 @@ measurements.
 
 ## Todo
 
-- Performance optimizations for days 6, 9, 11, 12, 14, 16, 18
-- Review solutions for common patterns
-- Clean up any messy solutions
+- Command line args for stats, slowest, etc.
+- Review solutions for common patterns.
+- Clean up any messy solutions.
+- Continue optimizing slowest solutions.
 
