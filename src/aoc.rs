@@ -26,51 +26,34 @@ pub trait Solution: Debug {
 }
 
 #[derive(Debug)]
-pub struct Answers {
-    pub part1: Option<String>,
-    pub part2: Option<String>,
+pub enum Answers {
+    Both(String, String),
+    Part1(String),
+    None,
 }
 
 impl Display for Answers {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        if let Some(part1) = &self.part1 {
-            write!(f, "Part 1: {part1}")?;
-            if let Some(_) = &self.part2 {
-                write!(f, "\n")?;
-            }
+        match self {
+            Self::Both(part1, part2) => write!(f, "Part 1: {part1}\nPart 2: {part2}"),
+            Self::Part1(part1) => write!(f, "Part 1: {part1}"),
+            Self::None => Ok(()),
         }
-        if let Some(part2) = &self.part2 {
-            write!(f, "Part 2: {part2}")?;
-        }
-        Ok(())
     }
 }
 
 impl Answers {
     pub fn both<T: Display, U: Display>(part1: T, part2: U) -> Answers {
-        Answers {
-            part1: Some(format!("{part1}")),
-            part2: Some(format!("{part2}")),
-        }
+        Answers::Both(format!("{part1}"), format!("{part2}"))
     }
 
     pub fn part1<T: Display>(part1: T) -> Answers {
-        Answers {
-            part1: Some(format!("{part1}")),
-            part2: None,
-        }
-    }
-
-    pub fn none() -> Answers {
-        Answers {
-            part1: None,
-            part2: None,
-        }
+        Answers::Part1(format!("{part1}"))
     }
 
     pub fn complete(&self) -> bool {
-        match (&self.part1, &self.part2) {
-            (Some(_), Some(_)) => true,
+        match self {
+            Self::Both(_, _) => true,
             _ => false,
         }
     }

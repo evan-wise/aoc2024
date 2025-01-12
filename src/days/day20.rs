@@ -88,7 +88,7 @@ impl Solution for Day20 {
             }
             Ok(Answers::part1(good_cheats))
         } else {
-            Ok(Answers::none())
+            Ok(Answers::None)
         }
     }
 }
