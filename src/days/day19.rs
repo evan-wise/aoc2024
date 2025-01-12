@@ -3,6 +3,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use std::error::Error;
 use std::fs::read_to_string;
 
+#[derive(Debug)]
 pub struct Day19 {
     available: FxHashSet<String>,
     patterns: Vec<String>,

@@ -2,6 +2,7 @@ use crate::aoc::{read_lines, Answers, Solution};
 use std::error::Error;
 use std::num::ParseIntError;
 
+#[derive(Debug)]
 pub struct Day17 {
     computer: Computer,
 }

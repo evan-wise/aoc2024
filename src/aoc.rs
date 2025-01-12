@@ -7,8 +7,9 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines, Read};
 use std::path::Path;
 use std::time::{Duration, Instant};
+use std::fmt::Debug;
 
-pub trait Solution {
+pub trait Solution: Debug {
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>>;
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>>;
     fn run(&mut self, num: usize) -> Result<SolutionData, Box<dyn Error>> {
@@ -115,7 +116,7 @@ impl Display for SolutionData {
             f,
             "Parse: {parse_millis:.3}ms, Solve: {solve_millis:.3}ms\n"
         )?;
-        write!(f, "{}\n", self.answers)
+        write!(f, "{}", self.answers)
     }
 }
 
