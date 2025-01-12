@@ -1,27 +1,44 @@
 mod aoc;
 mod days;
-use aoc::Statistics;
 
+use crate::aoc::Statistics;
 use crate::days::*;
-use std::env;
+use clap::Parser;
 use std::error::Error;
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// The day of the puzzle to run (mutually exclusive with --perf)
+    #[arg(group = "mode")]
+    day: Option<usize>,
+    /// Run performance tests (mutually exclusive with day)
+    #[arg(long, group = "mode")]
+    perf: bool,
+}
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut solutions = solutions();
-    match parse_args()? {
+    let args = Args::parse();
+
+    match args.day {
         None => {
             let mut data = Vec::new();
             for i in 0..solutions.len() {
                 let datum = solutions[i].run(i + 1)?;
-                println!("{datum}");
-                println!("");
+                if !args.perf {
+                    println!("{datum}");
+                    println!("");
+                }
                 data.push(datum);
             }
-            let stats = Statistics::calc(&data);
-            println!("{stats}");
-            println!("");
-            print_slowest(&stats, 5);
-            println!("");
+            if args.perf {
+                let stats = Statistics::calc(&data);
+                println!("{stats}");
+                println!("");
+                print_slowest(&stats, 5);
+                println!("");
+            }
         }
         Some(solution_num) => {
             if solution_num < 1 || solution_num > solutions.len() {
@@ -31,18 +48,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     Ok(())
-}
-
-fn parse_args() -> Result<Option<usize>, Box<dyn Error>> {
-    let args: Vec<String> = env::args().skip(1).collect();
-    if args.len() > 1 {
-        return Err("too many arguments".into());
-    }
-
-    if args.len() == 0 {
-        return Ok(None);
-    }
-    Ok(Some(args[0].parse::<usize>()?))
 }
 
 fn print_slowest(stats: &Statistics, n: usize) {
