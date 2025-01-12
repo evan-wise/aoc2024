@@ -52,7 +52,7 @@ impl Solution for Day17 {
             .collect::<Vec<_>>()
             .join(",");
         let quine_a = backtrack(&self.computer)?;
-        Ok(Answers::from(Some(output_str), Some(quine_a)))
+        Ok(Answers::both(output_str, quine_a))
     }
 }
 

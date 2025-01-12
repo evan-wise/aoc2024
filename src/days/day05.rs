@@ -88,6 +88,6 @@ impl Solution for Day05 {
                 corrected_total += pages[num_pages / 2];
             }
         }
-        Ok(Answers::from(Some(correct_total), Some(corrected_total)))
+        Ok(Answers::both(correct_total, corrected_total))
     }
 }

@@ -80,7 +80,7 @@ impl Solution for Day06 {
         }
         let part2 = self.loops.len();
 
-        Ok(Answers::from(Some(part1), Some(part2)))
+        Ok(Answers::both(part1, part2))
     }
 }
 

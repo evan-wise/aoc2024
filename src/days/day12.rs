@@ -102,7 +102,7 @@ impl Solution for Day12 {
         for region in &regions {
             discount_cost += (region.plots.len() as i32) * region.count_sides();
         }
-        Ok(Answers::from(Some(total_cost), Some(discount_cost)))
+        Ok(Answers::both(total_cost, discount_cost))
     }
 }
 

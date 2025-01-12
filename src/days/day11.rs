@@ -35,7 +35,7 @@ impl Solution for Day11 {
             self.stone_count_by_num = blink(&self.stone_count_by_num)?;
         }
         let total2 = get_total(&self.stone_count_by_num);
-        Ok(Answers::from(Some(total1), Some(total2)))
+        Ok(Answers::both(total1, total2))
     }
 }
 

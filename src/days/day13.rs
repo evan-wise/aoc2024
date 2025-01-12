@@ -75,7 +75,7 @@ impl Solution for Day13 {
         let cost1 = compute_cost(&self.claw_machines);
         rescale_prizes(&mut self.claw_machines);
         let cost2 = compute_cost(&self.claw_machines);
-        Ok(Answers::from(Some(cost1), Some(cost2)))
+        Ok(Answers::both(cost1, cost2))
     }
 }
 

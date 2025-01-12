@@ -153,7 +153,7 @@ impl Solution for Day16 {
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let (score, num_seats) = self.minimal_paths();
-        Ok(Answers::from(Some(score), Some(num_seats)))
+        Ok(Answers::both(score, num_seats))
     }
 }
 

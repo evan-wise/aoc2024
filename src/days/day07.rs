@@ -43,7 +43,7 @@ impl Solution for Day07 {
                 total_with_concat += test_val;
             }
         }
-        Ok(Answers::from(Some(total), Some(total_with_concat)))
+        Ok(Answers::both(total, total_with_concat))
     }
 }
 

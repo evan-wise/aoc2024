@@ -54,7 +54,7 @@ impl Solution for Day14 {
             }
             num_seconds += 1;
         }
-        Ok(Answers::from(Some(safety_score), Some(num_seconds)))
+        Ok(Answers::both(safety_score, num_seconds))
     }
 }
 

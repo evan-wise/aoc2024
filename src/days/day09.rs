@@ -50,7 +50,7 @@ impl Solution for Day09 {
         let checksum1 = compute_checksum(&self.blocks);
         compact_by_chunk2(&mut self.rle);
         let checksum2 = compute_checksum(&expand_rle(&self.rle));
-        Ok(Answers::from(Some(checksum1), Some(checksum2)))
+        Ok(Answers::both(checksum1, checksum2))
     }
 }
 

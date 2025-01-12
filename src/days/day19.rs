@@ -47,7 +47,7 @@ impl Solution for Day19 {
             }
             num_ways += recipes;
         }
-        Ok(Answers::from(Some(num_possible), Some(num_ways)))
+        Ok(Answers::both(num_possible, num_ways))
     }
 }
 

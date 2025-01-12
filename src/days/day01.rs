@@ -70,6 +70,6 @@ impl Solution for Day01 {
             }
         }
 
-        Ok(Answers::from(Some(total_distance), Some(cum_score)))
+        Ok(Answers::both(total_distance, cum_score))
     }
 }

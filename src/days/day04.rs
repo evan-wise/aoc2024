@@ -33,7 +33,7 @@ impl Solution for Day04 {
                 }
             }
         }
-        Ok(Answers::from(Some(xmas_total), Some(cross_total)))
+        Ok(Answers::both(xmas_total, cross_total))
     }
 }
 

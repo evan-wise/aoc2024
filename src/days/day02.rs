@@ -44,7 +44,7 @@ impl Solution for Day02 {
                 }
             }
         }
-        Ok(Answers::from(Some(count), Some(dampener_count)))
+        Ok(Answers::both(count, dampener_count))
     }
 }
 

@@ -2,12 +2,12 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::error::Error;
+use std::fmt::Debug;
 use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Lines, Read};
 use std::path::Path;
 use std::time::{Duration, Instant};
-use std::fmt::Debug;
 
 pub trait Solution: Debug {
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>>;
@@ -47,18 +47,11 @@ impl Display for Answers {
 }
 
 impl Answers {
-    pub fn from<T: Display, U: Display>(part1: Option<T>, part2: Option<U>) -> Answers {
-        let part1 = if let Some(p1) = part1 {
-            Some(format!("{}", p1))
-        } else {
-            None
-        };
-        let part2 = if let Some(p2) = part2 {
-            Some(format!("{}", p2))
-        } else {
-            None
-        };
-        Answers { part1, part2 }
+    pub fn both<T: Display, U: Display>(part1: T, part2: U) -> Answers {
+        Answers {
+            part1: Some(format!("{part1}")),
+            part2: Some(format!("{part2}")),
+        }
     }
 
     pub fn part1<T: Display>(part1: T) -> Answers {

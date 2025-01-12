@@ -97,10 +97,7 @@ impl Solution for Day08 {
             }
         }
 
-        Ok(Answers::from(
-            Some(antinodes.len()),
-            Some(harmonic_antinodes.len()),
-        ))
+        Ok(Answers::both(antinodes.len(), harmonic_antinodes.len()))
     }
 }
 

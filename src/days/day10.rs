@@ -120,6 +120,6 @@ impl Solution for Day10 {
             rating += self.compute_rating(*trailhead);
         }
 
-        Ok(Answers::from(Some(score), Some(rating)))
+        Ok(Answers::both(score, rating))
     }
 }

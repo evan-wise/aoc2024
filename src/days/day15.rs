@@ -304,7 +304,7 @@ impl Solution for Day15 {
 
         while let Some(_) = self.do_move() {}
         let sum2 = self.compute_sum();
-        Ok(Answers::from(Some(sum1), Some(sum2)))
+        Ok(Answers::both(sum1, sum2))
     }
 }
 

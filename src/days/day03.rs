@@ -19,9 +19,9 @@ impl Solution for Day03 {
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        Ok(Answers::from(
-            Some(compute_total(&self.chars, false)?),
-            Some(compute_total(&self.chars, true)?),
+        Ok(Answers::both(
+            compute_total(&self.chars, false)?,
+            compute_total(&self.chars, true)?,
         ))
     }
 }

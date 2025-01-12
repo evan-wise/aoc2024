@@ -68,7 +68,7 @@ impl Solution for Day18 {
                 }
             }
         }
-        Ok(Answers::from(dist, Some(byte_str)))
+        Ok(Answers::both(dist.unwrap(), byte_str))
     }
 }
 
