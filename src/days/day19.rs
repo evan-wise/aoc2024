@@ -74,9 +74,5 @@ fn count_recipes(
                 count_recipes(reduced, available, memos);
         }
     }
-    if let Some(count) = memos.get(pattern) {
-        *count
-    } else {
-        0
-    }
+    *memos.get(pattern).unwrap_or(&0)
 }
