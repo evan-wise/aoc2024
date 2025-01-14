@@ -1,6 +1,5 @@
 use crate::aoc::grid::Grid;
 use crate::aoc::{read_lines, Answers, Map, Position, Solution};
-// use rustc_hash::FxHashSet;
 use std::error::Error;
 use std::fmt::Display;
 
@@ -101,7 +100,6 @@ impl Day18 {
         let t = if y == 0 {
             true
         } else {
-            // self.corrupted.contains(&(x, y - 1))
             match self.grid[(x, y - 1)] {
                 Cell::Corrupted => true,
                 _ => false,
@@ -110,7 +108,6 @@ impl Day18 {
         let b = if y == self.size - 1 {
             true
         } else {
-            // self.corrupted.contains(&(x, y + 1))
             match self.grid[(x, y + 1)] {
                 Cell::Corrupted => true,
                 _ => false,
@@ -119,7 +116,6 @@ impl Day18 {
         let l = if x == 0 {
             true
         } else {
-            // self.corrupted.contains(&(x - 1, y))
             match self.grid[(x - 1, y)] {
                 Cell::Corrupted => true,
                 _ => false,
@@ -128,7 +124,6 @@ impl Day18 {
         let r = if x == self.size - 1 {
             true
         } else {
-            // self.corrupted.contains(&(x + 1, y))
             match self.grid[(x + 1, y)] {
                 Cell::Corrupted => true,
                 _ => false,
@@ -137,7 +132,6 @@ impl Day18 {
         let tl = if x == 0 || y == 0 {
             true
         } else {
-            // self.corrupted.contains(&(x - 1, y - 1))
             match self.grid[(x - 1, y - 1)] {
                 Cell::Corrupted => true,
                 _ => false,
@@ -146,7 +140,6 @@ impl Day18 {
         let tr = if x == self.size - 1 || y == 0 {
             true
         } else {
-            // self.corrupted.contains(&(x + 1, y - 1))
             match self.grid[(x + 1, y - 1)] {
                 Cell::Corrupted => true,
                 _ => false,
@@ -155,7 +148,6 @@ impl Day18 {
         let bl = if x == 0 || y == self.size - 1 {
             true
         } else {
-            // self.corrupted.contains(&(x - 1, y + 1))
             match self.grid[(x - 1, y + 1)] {
                 Cell::Corrupted => true,
                 _ => false,
@@ -164,7 +156,6 @@ impl Day18 {
         let br = if x == self.size - 1 || y == self.size - 1 {
             true
         } else {
-            // self.corrupted.contains(&(x + 1, y + 1))
             match self.grid[(x + 1, y + 1)] {
                 Cell::Corrupted => true,
                 _ => false,
