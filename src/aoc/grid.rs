@@ -4,7 +4,9 @@ use crate::aoc::Position;
 
 #[derive(Debug)]
 pub struct Grid<T>
-where T: Clone {
+where
+    T: Clone,
+{
     items: Vec<T>,
     pub width: usize,
     pub height: usize,
@@ -12,11 +14,19 @@ where T: Clone {
 
 impl<T: Clone> Grid<T> {
     pub fn new() -> Grid<T> {
-        Grid { items: Vec::<T>::new(), width: 0, height: 0 }
+        Grid {
+            items: Vec::<T>::new(),
+            width: 0,
+            height: 0,
+        }
     }
 
-    pub fn fill(value:T, width: usize, height: usize) -> Grid<T> {
-        Grid { items: vec![value; width * height], width, height }
+    pub fn fill(value: T, width: usize, height: usize) -> Grid<T> {
+        Grid {
+            items: vec![value; width * height],
+            width,
+            height,
+        }
     }
 
     pub fn clear(&mut self) {
