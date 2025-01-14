@@ -2,6 +2,8 @@ use crate::aoc::{read_chars, Answers, Direction, Map, Position, Solution};
 use rustc_hash::FxHashSet;
 use std::error::Error;
 use std::fmt::Display;
+use std::hash::Hash;
+use std::time::Instant;
 
 #[derive(Debug)]
 pub struct Day06 {
@@ -61,7 +63,10 @@ impl Solution for Day06 {
         let part1 = self.visited.len();
         let history = self.history[0..self.history.len() - 1].to_vec();
 
-        for guard in &history {
+        let mut times = vec![0; history.len()];
+        for i in 0..history.len() {
+            let timer = Instant::now();
+            let guard = history[i];
             if let Some((pos, _)) = self.go(guard.direction, guard.position) {
                 let (x, y) = pos;
 
@@ -77,7 +82,11 @@ impl Solution for Day06 {
                 }
                 self.grid[y][x] = Cell::Empty;
             }
+            times[i] = timer.elapsed().as_micros();
         }
+        let n = times.len() as f64;
+        let avg = times.iter().fold(0.0, |a, t| a + *t as f64 / n);
+        println!("simulations: {n:.0}, average simulation: {avg:.0}μs");
         let part2 = self.loops.len();
 
         Ok(Answers::both(part1, part2))
@@ -142,18 +151,18 @@ impl Day06 {
         self.seen.clear();
         self.seen.insert(self.guard);
         if let SimulationType::History = simulation_type {
-            self.history = Vec::from([self.guard]);
+            self.history.clear();
+            self.history.push(self.guard);
             self.visited.clear();
             self.visited.insert(self.guard.position);
         }
         while let Some((guard, _)) = self.step() {
+            if !self.seen.insert(guard) {
+                return SimulationResult::Loop;
+            }
             if let SimulationType::History = simulation_type {
                 self.history.push(guard);
                 self.visited.insert(guard.position);
-            }
-
-            if !self.seen.insert(guard) {
-                return SimulationResult::Loop;
             }
         }
         SimulationResult::Exit
@@ -175,7 +184,7 @@ impl Display for Cell {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 struct Guard {
     position: Position,
     direction: Direction,
@@ -187,6 +196,14 @@ impl Guard {
             position: (0, 0),
             direction: Direction::Up,
         }
+    }
+}
+
+impl Hash for Guard {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        let (x, y) = self.position;
+        let i = ((y as u32) << 15) + ((x as u32) << 2) + (self.direction as u32);
+        i.hash(state)
     }
 }
 
