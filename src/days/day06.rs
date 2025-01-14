@@ -3,7 +3,6 @@ use rustc_hash::FxHashSet;
 use std::error::Error;
 use std::fmt::Display;
 use std::hash::Hash;
-use std::time::Instant;
 
 #[derive(Debug)]
 pub struct Day06 {
@@ -63,9 +62,7 @@ impl Solution for Day06 {
         let part1 = self.visited.len();
         let history = self.history[0..self.history.len() - 1].to_vec();
 
-        let mut times = vec![0; history.len()];
         for i in 0..history.len() {
-            let timer = Instant::now();
             let guard = history[i];
             if let Some((pos, _)) = self.go(guard.direction, guard.position) {
                 let (x, y) = pos;
@@ -82,11 +79,7 @@ impl Solution for Day06 {
                 }
                 self.grid[y][x] = Cell::Empty;
             }
-            times[i] = timer.elapsed().as_micros();
         }
-        let n = times.len() as f64;
-        let avg = times.iter().fold(0.0, |a, t| a + *t as f64 / n);
-        println!("simulations: {n:.0}, average simulation: {avg:.0}μs");
         let part2 = self.loops.len();
 
         Ok(Answers::both(part1, part2))
