@@ -1,3 +1,4 @@
+use crate::aoc::grid::Grid;
 use crate::aoc::{read_chars, Answers, Direction, Map, Position, Solution};
 use rustc_hash::FxHashSet;
 use std::error::Error;
@@ -6,9 +7,7 @@ use std::hash::Hash;
 
 #[derive(Debug)]
 pub struct Day06 {
-    grid: Vec<Vec<Cell>>,
-    width: usize,
-    height: usize,
+    grid: Grid<Cell>,
     guard: Guard,
     history: Vec<Guard>,
     visited: FxHashSet<Position>,
@@ -18,28 +17,27 @@ pub struct Day06 {
 
 impl Solution for Day06 {
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
-        let mut row = Vec::new();
+        let filename = "./data/day06.txt";
+        let width = if filename.contains("/data/") { 130 } else { 10 };
+        let height = width;
+        self.grid = Grid::fill(Cell::Empty, width, height);
         let mut y = 0;
         let mut x = 0;
-        let chars = read_chars("./data/day06.txt")?;
+        let chars = read_chars(filename)?;
         for char in chars.flatten() {
             match char {
                 '.' => {
-                    row.push(Cell::Empty);
                     x += 1;
                 }
                 '#' => {
-                    row.push(Cell::Obstacle);
+                    self.grid[(x, y)] = Cell::Obstacle;
                     x += 1;
                 }
                 '^' => {
-                    row.push(Cell::Empty);
                     self.place_guard((x, y));
                     x += 1;
                 }
                 '\n' => {
-                    self.grid.push(row);
-                    row = Vec::new();
                     y += 1;
                     x = 0;
                 }
@@ -48,12 +46,6 @@ impl Solution for Day06 {
                 }
             }
         }
-        self.height = self.grid.len();
-        self.width = if self.height > 0 {
-            self.grid[0].len()
-        } else {
-            0
-        };
         Ok(())
     }
 
@@ -65,19 +57,17 @@ impl Solution for Day06 {
         for i in 0..history.len() {
             let guard = history[i];
             if let Some((pos, _)) = self.go(guard.direction, guard.position) {
-                let (x, y) = pos;
-
-                if self.loops.contains(&pos) || self.grid[y][x] == Cell::Obstacle {
+                if self.loops.contains(&pos) || self.grid[pos] == Cell::Obstacle {
                     continue;
                 }
 
                 self.place_guard(history[0].position);
 
-                self.grid[y][x] = Cell::Obstacle;
+                self.grid[pos] = Cell::Obstacle;
                 if let SimulationResult::Loop = self.simulate(SimulationType::Test) {
                     self.loops.insert(pos);
                 }
-                self.grid[y][x] = Cell::Empty;
+                self.grid[pos] = Cell::Empty;
             }
         }
         let part2 = self.loops.len();
@@ -90,28 +80,22 @@ impl Map for Day06 {
     type Cell = Cell;
 
     fn get(&self, pos: Position) -> Option<Self::Cell> {
-        let (x, y) = pos;
-        if x >= self.width || y >= self.height {
-            return None;
-        }
-        Some(self.grid[y][x])
+        self.grid.get(&pos).copied()
     }
 
     fn width(&self) -> usize {
-        self.width
+        self.grid.width
     }
 
     fn height(&self) -> usize {
-        self.height
+        self.grid.height
     }
 }
 
 impl Day06 {
     pub fn new() -> Day06 {
         Day06 {
-            grid: Vec::new(),
-            width: 0,
-            height: 0,
+            grid: Grid::new(),
             guard: Guard::new(),
             history: Vec::new(),
             visited: FxHashSet::default(),
