@@ -1,3 +1,5 @@
+pub mod grid;
+
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;

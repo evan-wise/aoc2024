@@ -1,23 +1,24 @@
+use crate::aoc::grid::Grid;
 use crate::aoc::{read_lines, Answers, Map, Position, Solution};
-use rustc_hash::FxHashSet;
+// use rustc_hash::FxHashSet;
 use std::error::Error;
 use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct Day18 {
+    grid: Grid<Cell>,
     bytes: Vec<Position>,
     num_bytes: usize,
     size: usize,
-    corrupted: FxHashSet<Position>,
 }
 
 impl Day18 {
     pub fn new() -> Day18 {
         Day18 {
+            grid: Grid::new(),
             bytes: Vec::new(),
             num_bytes: 0,
             size: 0,
-            corrupted: FxHashSet::default(),
         }
     }
 }
@@ -25,7 +26,6 @@ impl Day18 {
 impl Solution for Day18 {
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let filename = "./data/day18.txt";
-        let lines = read_lines(filename)?;
         self.num_bytes = if filename.contains("/data/") {
             1024
         } else if filename.contains("/examples/") {
@@ -34,6 +34,9 @@ impl Solution for Day18 {
             return Err("expected path to contain \"/data/\" or \"/examples/\"".into());
         };
         self.size = if self.num_bytes == 1024 { 71 } else { 7 };
+        self.grid = Grid::fill(Cell::Safe, self.size, self.size);
+
+        let lines = read_lines(filename)?;
         for (line_num, line) in lines.flatten().enumerate() {
             let parts = line
                 .split(",")
@@ -52,7 +55,8 @@ impl Solution for Day18 {
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         for i in 0..self.num_bytes {
-            self.corrupted.insert(self.bytes[i]);
+            let byte = self.bytes[i];
+            self.grid[byte] = Cell::Corrupted;
         }
         let start = (0, 0);
         let end = (self.size - 1, self.size - 1);
@@ -60,7 +64,7 @@ impl Solution for Day18 {
         let mut byte_str = String::new();
         for i in self.num_bytes..self.bytes.len() {
             let byte = self.bytes[i];
-            self.corrupted.insert(byte);
+            self.grid[byte] = Cell::Corrupted;
             if let Some(true) = self.chokepoint(byte) {
                 if let (None, _) = self.minimal_path(Cell::Safe, start, end) {
                     byte_str = format!("{},{}", byte.0, byte.1);
@@ -84,15 +88,7 @@ impl Map for Day18 {
     }
 
     fn get(&self, pos: Position) -> Option<Cell> {
-        let (x, y) = pos;
-        if x >= self.size || y >= self.size {
-            return None;
-        }
-        if self.corrupted.contains(&pos) {
-            Some(Cell::Corrupted)
-        } else {
-            Some(Cell::Safe)
-        }
+        self.grid.get(&pos).copied()
     }
 }
 
@@ -105,42 +101,74 @@ impl Day18 {
         let t = if y == 0 {
             true
         } else {
-            self.corrupted.contains(&(x, y - 1))
+            // self.corrupted.contains(&(x, y - 1))
+            match self.grid[(x, y - 1)] {
+                Cell::Corrupted => true,
+                _ => false,
+            }
         };
         let b = if y == self.size - 1 {
             true
         } else {
-            self.corrupted.contains(&(x, y + 1))
+            // self.corrupted.contains(&(x, y + 1))
+            match self.grid[(x, y + 1)] {
+                Cell::Corrupted => true,
+                _ => false,
+            }
         };
         let l = if x == 0 {
             true
         } else {
-            self.corrupted.contains(&(x - 1, y))
+            // self.corrupted.contains(&(x - 1, y))
+            match self.grid[(x - 1, y)] {
+                Cell::Corrupted => true,
+                _ => false,
+            }
         };
         let r = if x == self.size - 1 {
             true
         } else {
-            self.corrupted.contains(&(x + 1, y))
+            // self.corrupted.contains(&(x + 1, y))
+            match self.grid[(x + 1, y)] {
+                Cell::Corrupted => true,
+                _ => false,
+            }
         };
         let tl = if x == 0 || y == 0 {
             true
         } else {
-            self.corrupted.contains(&(x - 1, y - 1))
+            // self.corrupted.contains(&(x - 1, y - 1))
+            match self.grid[(x - 1, y - 1)] {
+                Cell::Corrupted => true,
+                _ => false,
+            }
         };
         let tr = if x == self.size - 1 || y == 0 {
             true
         } else {
-            self.corrupted.contains(&(x + 1, y - 1))
+            // self.corrupted.contains(&(x + 1, y - 1))
+            match self.grid[(x + 1, y - 1)] {
+                Cell::Corrupted => true,
+                _ => false,
+            }
         };
         let bl = if x == 0 || y == self.size - 1 {
             true
         } else {
-            self.corrupted.contains(&(x - 1, y + 1))
+            // self.corrupted.contains(&(x - 1, y + 1))
+            match self.grid[(x - 1, y + 1)] {
+                Cell::Corrupted => true,
+                _ => false,
+            }
         };
         let br = if x == self.size - 1 || y == self.size - 1 {
             true
         } else {
-            self.corrupted.contains(&(x + 1, y + 1))
+            // self.corrupted.contains(&(x + 1, y + 1))
+            match self.grid[(x + 1, y + 1)] {
+                Cell::Corrupted => true,
+                _ => false,
+            }
         };
 
         Some(
