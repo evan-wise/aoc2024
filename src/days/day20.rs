@@ -1,3 +1,4 @@
+use crate::aoc::grid::Grid;
 use crate::aoc::{read_lines, Answers, Direction, Map, Position, Solution};
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::error::Error;
@@ -6,9 +7,7 @@ use std::fmt::Display;
 #[derive(Debug)]
 pub struct Day20 {
     live: bool,
-    grid: Vec<Vec<Cell>>,
-    width: usize,
-    height: usize,
+    grid: Grid<Cell>,
     start: Position,
     end: Position,
 }
@@ -17,9 +16,7 @@ impl Day20 {
     pub fn new() -> Day20 {
         Day20 {
             live: false,
-            grid: Vec::new(),
-            width: 0,
-            height: 0,
+            grid: Grid::new(),
             start: (0, 0),
             end: (0, 0),
         }
@@ -35,11 +32,13 @@ impl Solution for Day20 {
         } else {
             false
         };
+        self.grid.width = if self.live { 141 } else { 15 };
+        self.grid.height = self.grid.width;
         for (y, line) in lines.flatten().enumerate() {
-            self.grid.push(
+            self.grid.extend(
                 line.chars()
                     .map(|c| Cell::from(c))
-                    .collect::<Result<_, _>>()?,
+                    .collect::<Result<Vec<_>, _>>()?,
             );
             if let Some(x) = line.chars().position(|c| c == 'S') {
                 self.start = (x, y);
@@ -48,12 +47,6 @@ impl Solution for Day20 {
                 self.end = (x, y);
             }
         }
-        self.height = self.grid.len();
-        self.width = if self.height > 0 {
-            self.grid[0].len()
-        } else {
-            0
-        };
         Ok(())
     }
 
@@ -96,19 +89,15 @@ impl Solution for Day20 {
 impl Map for Day20 {
     type Cell = Cell;
     fn get(&self, pos: Position) -> Option<Self::Cell> {
-        let (x, y) = pos;
-        if x >= self.width || y >= self.height {
-            return None;
-        }
-        Some(self.grid[y][x])
+        self.grid.get(&pos).copied()
     }
 
     fn width(&self) -> usize {
-        self.width
+        self.grid.width
     }
 
     fn height(&self) -> usize {
-        self.height
+        self.grid.height
     }
 }
 
@@ -130,22 +119,22 @@ fn backtrack(
 #[allow(dead_code)]
 impl Day20 {
     fn print_map(&self, visited: &FxHashSet<Position>) {
-        for (y, row) in self.grid.iter().enumerate() {
-            println!(
+        for (pos, cell) in self.grid.iter() {
+            print!(
                 "{}",
-                row.iter()
-                    .enumerate()
-                    .map(|(x, c)| if (x, y) == self.end {
-                        "E".to_string()
-                    } else if (x, y) == self.start {
-                        "S".to_string()
-                    } else if visited.contains(&(x, y)) {
-                        "O".to_string()
-                    } else {
-                        format!("{c}")
-                    })
-                    .collect::<String>()
+                if pos == self.end {
+                    "E".to_string()
+                } else if pos == self.start {
+                    "S".to_string()
+                } else if visited.contains(&pos) {
+                    "O".to_string()
+                } else {
+                    format!("{cell}")
+                }
             );
+            if pos.0 == self.grid.width - 1 {
+                print!("\n");
+            }
         }
     }
 }

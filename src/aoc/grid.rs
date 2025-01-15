@@ -12,6 +12,7 @@ where
     pub height: usize,
 }
 
+#[allow(dead_code)]
 impl<T: Clone> Grid<T> {
     pub fn new() -> Grid<T> {
         Grid {
@@ -33,6 +34,14 @@ impl<T: Clone> Grid<T> {
         self.items.clear();
     }
 
+    pub fn push(&mut self, item: T) {
+        self.items.push(item);
+    }
+
+    pub fn extend<I: IntoIterator<Item = T>>(&mut self, items: I) {
+        self.items.extend(items);
+    }
+
     pub fn get(&self, position: &Position) -> Option<&T> {
         let (x, y) = position;
         if *x >= self.width || *y >= self.height {
@@ -47,6 +56,20 @@ impl<T: Clone> Grid<T> {
             return None;
         }
         self.items.get_mut(y * self.width + x)
+    }
+
+    pub fn len(&self) -> usize {
+        self.items.len()
+    }
+
+    pub fn iter(&self) -> GridIterator<T> {
+        GridIterator::new(&self)
+    }
+}
+
+impl<T: Clone> Extend<T> for Grid<T> {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        self.items.extend(iter);
     }
 }
 
@@ -68,5 +91,33 @@ impl<T: Clone> IndexMut<Position> for Grid<T> {
             panic!();
         }
         self.items.index_mut(y * self.width + x)
+    }
+}
+
+pub struct GridIterator<'a, T>
+where
+    T: Clone,
+{
+    grid: &'a Grid<T>,
+    i: usize,
+}
+
+impl<'a, T: Clone> GridIterator<'a, T> {
+    pub fn new(grid: &'a Grid<T>) -> GridIterator<'a, T> {
+        GridIterator { grid, i: 0 }
+    }
+}
+
+impl<'a, T: Clone> Iterator for GridIterator<'a, T> {
+    type Item = (Position, T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.i >= self.grid.len() {
+            return None;
+        }
+        self.i += 1;
+        let x = self.i % self.grid.width;
+        let y = self.i / self.grid.width;
+        self.grid.items.get(self.i).cloned().map(|i| ((x, y), i))
     }
 }
