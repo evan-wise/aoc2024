@@ -56,32 +56,61 @@ impl Solution for Day20 {
         {
             let (_, reverse_lows) = self.minimal_path(Cell::Empty, self.end, self.start);
             let mut cheats = FxHashMap::default();
-            let mut good_cheats = 0 as usize;
+            for pos in &backtrack(self.end, &backtracks) {
+                self.explore_two_steps(*pos, base, &lows, &reverse_lows, &mut cheats);
+            }
             let cheat_threshold = if self.live { 100 } else { 50 };
-            let visited = backtrack(self.end, &backtracks);
-            for pos in &visited {
-                for d in Direction::all() {
-                    if let Some((p1, Cell::Wall)) = self.go(d, *pos) {
-                        if let Some((p2, Cell::Empty)) = self.go(d, p1) {
-                            if cheats.contains_key(&(p1, p2)) {
-                                continue;
-                            }
-                            if let (Some(l), Some(r)) = (lows.get(&pos), reverse_lows.get(&p2)) {
-                                let time = r + 2 + l;
-                                if time < base {
-                                    cheats.insert((p1, p2), time);
-                                    if base - time >= cheat_threshold {
-                                        good_cheats += 1;
-                                    }
-                                }
-                            }
-                        }
-                    }
+            let mut good_cheats = 0 as usize;
+            for (_, time) in &cheats {
+                if base - time >= cheat_threshold {
+                    good_cheats += 1;
                 }
             }
             Ok(Answers::part1(good_cheats))
         } else {
             Ok(Answers::None)
+        }
+    }
+}
+
+fn backtrack(
+    from: Position,
+    backtracks: &FxHashMap<Position, FxHashSet<Position>>,
+) -> FxHashSet<Position> {
+    let mut visited = FxHashSet::default();
+    let mut stack = vec![from];
+    let empty = FxHashSet::default();
+    while let Some(pos) = stack.pop() {
+        if visited.insert(pos) {
+            stack.extend(backtracks.get(&pos).unwrap_or(&empty));
+        }
+    }
+    visited
+}
+
+impl Day20 {
+    fn explore_two_steps(
+        &self,
+        from: Position,
+        base: usize,
+        lows: &FxHashMap<Position, usize>,
+        reverse_lows: &FxHashMap<Position, usize>,
+        cheats: &mut FxHashMap<(Position, Position), usize>,
+    ) {
+        for d in Direction::all() {
+            if let Some((p1, Cell::Wall)) = self.go(d, from) {
+                if let Some((p2, Cell::Empty)) = self.go(d, p1) {
+                    if cheats.contains_key(&(p1, p2)) {
+                        return;
+                    }
+                    if let (Some(l), Some(r)) = (lows.get(&from), reverse_lows.get(&p2)) {
+                        let time = r + 2 + l;
+                        if time < base {
+                            cheats.insert((p1, p2), time);
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -99,21 +128,6 @@ impl Map for Day20 {
     fn height(&self) -> usize {
         self.grid.height
     }
-}
-
-fn backtrack(
-    from: Position,
-    backtracks: &FxHashMap<Position, FxHashSet<Position>>,
-) -> FxHashSet<Position> {
-    let mut visited = FxHashSet::default();
-    let mut stack = vec![from];
-    let empty = FxHashSet::default();
-    while let Some(pos) = stack.pop() {
-        if visited.insert(pos) {
-            stack.extend(backtracks.get(&pos).unwrap_or(&empty));
-        }
-    }
-    visited
 }
 
 #[allow(dead_code)]
