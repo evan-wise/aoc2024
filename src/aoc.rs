@@ -27,6 +27,8 @@ pub trait Solution: Debug {
     }
 }
 
+// Suppress warnings since Part1 and None will only be used early in solutions.
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum Answers {
     Both(String, String),
@@ -44,6 +46,8 @@ impl Display for Answers {
     }
 }
 
+// Suppress warnings since Part1 and None will only be used early in solutions.
+#[allow(dead_code)]
 impl Answers {
     pub fn both<T: Display, U: Display>(part1: T, part2: U) -> Answers {
         Answers::Both(format!("{part1}"), format!("{part2}"))
