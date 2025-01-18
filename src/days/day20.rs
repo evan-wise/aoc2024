@@ -1,6 +1,8 @@
 use crate::aoc::grid::Grid;
 use crate::aoc::{read_lines, Answers, Direction, Map, Position, Solution};
 use rustc_hash::{FxHashMap, FxHashSet};
+use std::cmp::Reverse;
+use std::collections::BinaryHeap;
 use std::error::Error;
 use std::fmt::Display;
 
@@ -56,14 +58,17 @@ impl Solution for Day20 {
         let base = maybe_base.ok_or("no solution to input maze")?;
         let (_, reverse_lows) = self.minimal_path(Cell::Empty, self.end, self.start);
         let mut cheats = FxHashMap::default();
-        for pos in &backtrack(self.end, &backtracks) {
-            self.explore_two_steps(*pos, base, &lows, &reverse_lows, &mut cheats);
+        let visited = backtrack(self.end, &backtracks);
+        for pos in &visited {
+            self.explore(2, *pos, base, &lows, &reverse_lows, &mut cheats);
         }
-        let cheat_threshold = if self.live { 100 } else { 50 };
-        let good_cheats = cheats.iter().fold(0usize, |a, (_, time)| {
-            a + if base - time >= cheat_threshold { 1 } else { 0 }
-        });
-        Ok(Answers::part1(good_cheats))
+        let thresh = if self.live { 100 } else { 50 };
+        let part1 = count_good_cheats(&cheats, base, thresh);
+        for pos in &visited {
+            self.explore(20, *pos, base, &lows, &reverse_lows, &mut cheats);
+        }
+        let part2 = count_good_cheats(&cheats, base, thresh);
+        Ok(Answers::both(part1, part2))
     }
 }
 
@@ -82,27 +87,52 @@ fn backtrack(
     visited
 }
 
+fn count_good_cheats(
+    cheats: &FxHashMap<(Position, Position), usize>,
+    base: usize,
+    thresh: usize,
+) -> usize {
+    cheats.iter().fold(0usize, |a, (_, time)| {
+        a + if base - time >= thresh { 1 } else { 0 }
+    })
+}
+
 impl Day20 {
-    fn explore_two_steps(
+    fn explore(
         &self,
+        max_steps: usize,
         from: Position,
         base: usize,
-        lows: &FxHashMap<Position, usize>,
+        forward_lows: &FxHashMap<Position, usize>,
         reverse_lows: &FxHashMap<Position, usize>,
         cheats: &mut FxHashMap<(Position, Position), usize>,
     ) {
-        for d in Direction::all() {
-            if let Some((p1, Cell::Wall)) = self.go(d, from) {
-                if let Some((p2, Cell::Empty)) = self.go(d, p1) {
-                    if cheats.contains_key(&(p1, p2)) {
-                        return;
-                    }
-                    if let (Some(l), Some(r)) = (lows.get(&from), reverse_lows.get(&p2)) {
-                        let time = r + 2 + l;
-                        if time < base {
-                            cheats.insert((p1, p2), time);
-                        }
-                    }
+        let mut heap = BinaryHeap::from([(Reverse(0), from, self.get(from).unwrap())]);
+        let mut lows = FxHashMap::default();
+        while let Some((Reverse(dist), pos, cell)) = heap.pop() {
+            let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
+            if dist > prev_dist {
+                continue;
+            }
+            if prev_dist < usize::MAX {
+                continue;
+            }
+            lows.insert(pos, dist);
+            if let (Cell::Empty, Some(l), Some(r)) =
+                (cell, forward_lows.get(&from), reverse_lows.get(&pos))
+            {
+                let time = r + dist + l;
+                let prev_cheat = *cheats.get(&(from, pos)).unwrap_or(&usize::MAX);
+                if time < base && time < prev_cheat {
+                    cheats.insert((from, pos), time);
+                }
+            }
+            if dist >= max_steps {
+                continue;
+            }
+            for d in Direction::all() {
+                if let Some(((x, y), c)) = self.go(d, pos) {
+                    heap.push((Reverse(dist + 1), (x, y), c));
                 }
             }
         }
@@ -147,7 +177,7 @@ impl Day20 {
     }
 }
 
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, PartialOrd, Ord, Copy, Clone, Debug)]
 pub enum Cell {
     Empty,
     Wall,
