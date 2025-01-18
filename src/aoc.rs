@@ -232,7 +232,7 @@ pub trait Map {
     type Cell: Display + Eq;
     fn width(&self) -> usize;
     fn height(&self) -> usize;
-    fn get(&self, pos: Position) -> Option<Self::Cell>;
+    fn get(&self, pos: &Position) -> Option<&Self::Cell>;
 
     fn minimal_path(
         &self,
@@ -255,8 +255,8 @@ pub trait Map {
                 continue;
             }
             for d in Direction::all() {
-                if let Some(((x, y), cell)) = self.go(d, pos) {
-                    if cell == open {
+                if let Some(((x, y), cell)) = self.go(d, &pos) {
+                    if *cell == open {
                         heap.push((Reverse(dist + 1), (x, y)));
                     }
                 }
@@ -297,8 +297,8 @@ pub trait Map {
                 continue;
             }
             for d in Direction::all() {
-                if let Some(((x, y), cell)) = self.go(d, pos) {
-                    if cell == open {
+                if let Some(((x, y), cell)) = self.go(d, &pos) {
+                    if *cell == open {
                         heap.push((Reverse(dist + 1), (x, y), Some(pos)));
                     }
                 }
@@ -307,8 +307,8 @@ pub trait Map {
         (lows.get(&end).copied(), lows, backtracks)
     }
 
-    fn go(&self, dir: Direction, pos: Position) -> Option<(Position, Self::Cell)> {
-        let (x, y) = pos;
+    fn go(&self, dir: Direction, pos: &Position) -> Option<(Position, &Self::Cell)> {
+        let (x, y) = *pos;
         let width = self.width();
         let height = self.height();
         let new = match dir {
@@ -337,7 +337,7 @@ pub trait Map {
                 (x + 1, y)
             }
         };
-        if let Some(state) = self.get(new) {
+        if let Some(state) = self.get(&new) {
             return Some((new, state));
         }
         None
@@ -352,7 +352,7 @@ impl<'a, T: Map> Display for MapDisplay<'a, T> {
         let width = self.0.width();
         for y in 0..height {
             for x in 0..width {
-                write!(f, "{}", self.0.get((x, y)).unwrap())?;
+                write!(f, "{}", self.0.get(&(x, y)).unwrap())?;
             }
             if y != height - 1 {
                 write!(f, "\n")?;

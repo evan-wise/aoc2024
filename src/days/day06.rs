@@ -56,7 +56,7 @@ impl Solution for Day06 {
 
         for i in 0..history.len() {
             let guard = history[i];
-            if let Some((pos, _)) = self.go(guard.direction, guard.position) {
+            if let Some((pos, _)) = self.go(guard.direction, &guard.position) {
                 if self.loops.contains(&pos) || self.grid[pos] == Cell::Obstacle {
                     continue;
                 }
@@ -79,8 +79,8 @@ impl Solution for Day06 {
 impl Map for Day06 {
     type Cell = Cell;
 
-    fn get(&self, pos: Position) -> Option<Self::Cell> {
-        self.grid.get(&pos).copied()
+    fn get(&self, pos: &Position) -> Option<&Self::Cell> {
+        self.grid.get(&pos)
     }
 
     fn width(&self) -> usize {
@@ -111,7 +111,7 @@ impl Day06 {
     }
 
     fn step(&mut self) -> Option<(Guard, Cell)> {
-        match self.go(self.guard.direction, self.guard.position) {
+        match self.go(self.guard.direction, &self.guard.position) {
             Some((_, Cell::Obstacle)) => {
                 self.guard.direction = self.guard.direction.right();
                 Some((self.guard, Cell::Obstacle))

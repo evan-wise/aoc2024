@@ -19,4 +19,3 @@ impl Solution for Day21 {
         Ok(Answers::None)
     }
 }
-

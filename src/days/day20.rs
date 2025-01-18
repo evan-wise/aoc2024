@@ -107,7 +107,7 @@ impl Day20 {
         reverse_lows: &FxHashMap<Position, usize>,
         cheats: &mut FxHashMap<(Position, Position), usize>,
     ) {
-        let mut heap = BinaryHeap::from([(Reverse(0), from, self.get(from).unwrap())]);
+        let mut heap = BinaryHeap::from([(Reverse(0), from, self.get(&from).unwrap())]);
         let mut lows = FxHashMap::default();
         while let Some((Reverse(dist), pos, cell)) = heap.pop() {
             let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
@@ -131,7 +131,7 @@ impl Day20 {
                 continue;
             }
             for d in Direction::all() {
-                if let Some(((x, y), c)) = self.go(d, pos) {
+                if let Some(((x, y), c)) = self.go(d, &pos) {
                     heap.push((Reverse(dist + 1), (x, y), c));
                 }
             }
@@ -141,8 +141,8 @@ impl Day20 {
 
 impl Map for Day20 {
     type Cell = Cell;
-    fn get(&self, pos: Position) -> Option<Self::Cell> {
-        self.grid.get(&pos).copied()
+    fn get(&self, pos: &Position) -> Option<&Self::Cell> {
+        self.grid.get(pos)
     }
 
     fn width(&self) -> usize {

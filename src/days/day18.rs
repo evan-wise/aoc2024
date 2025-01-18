@@ -86,8 +86,8 @@ impl Map for Day18 {
         self.size
     }
 
-    fn get(&self, pos: Position) -> Option<Cell> {
-        self.grid.get(&pos).copied()
+    fn get(&self, pos: &Position) -> Option<&Cell> {
+        self.grid.get(&pos)
     }
 }
 
