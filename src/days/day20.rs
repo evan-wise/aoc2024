@@ -53,19 +53,19 @@ impl Solution for Day20 {
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        let (maybe_base, lows, backtracks) =
+        let (maybe_base, forward_lows, backtracks) =
             self.backtrack_minimal_path(Cell::Empty, self.start, self.end);
         let base = maybe_base.ok_or("no solution to input maze")?;
         let (_, reverse_lows) = self.minimal_path(Cell::Empty, self.end, self.start);
         let mut cheats = FxHashMap::default();
         let visited = backtrack(self.end, &backtracks);
         for pos in &visited {
-            self.explore(2, *pos, base, &lows, &reverse_lows, &mut cheats);
+            self.explore(2, *pos, base, &forward_lows, &reverse_lows, &mut cheats);
         }
         let thresh = if self.live { 100 } else { 50 };
         let part1 = count_good_cheats(&cheats, base, thresh);
         for pos in &visited {
-            self.explore(20, *pos, base, &lows, &reverse_lows, &mut cheats);
+            self.explore(20, *pos, base, &forward_lows, &reverse_lows, &mut cheats);
         }
         let part2 = count_good_cheats(&cheats, base, thresh);
         Ok(Answers::both(part1, part2))
@@ -103,12 +103,12 @@ impl Day20 {
         max_steps: usize,
         from: Position,
         base: usize,
-        forward_lows: &FxHashMap<Position, usize>,
-        reverse_lows: &FxHashMap<Position, usize>,
+        forward_lows: &Grid<usize>,
+        reverse_lows: &Grid<usize>,
         cheats: &mut FxHashMap<(Position, Position), usize>,
     ) {
         let mut heap = BinaryHeap::from([(Reverse(0), from, self.get(&from).unwrap())]);
-        let mut lows = FxHashMap::default();
+        let mut lows = Grid::fill(usize::MAX, self.width(), self.height());
         while let Some((Reverse(dist), pos, cell)) = heap.pop() {
             let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
             if dist > prev_dist {
@@ -117,7 +117,7 @@ impl Day20 {
             if prev_dist < usize::MAX {
                 continue;
             }
-            lows.insert(pos, dist);
+            lows[pos] = dist;
             if let (Cell::Empty, Some(l), Some(r)) =
                 (cell, forward_lows.get(&from), reverse_lows.get(&pos))
             {
@@ -156,7 +156,7 @@ impl Map for Day20 {
 
 #[allow(dead_code)]
 impl Day20 {
-    fn print_map(&self, visited: &FxHashSet<Position>) {
+    fn print_map(&self, visited: &Grid<bool>) {
         for (pos, cell) in self.grid.iter() {
             print!(
                 "{}",
@@ -164,7 +164,7 @@ impl Day20 {
                     "E".to_string()
                 } else if pos == self.start {
                     "S".to_string()
-                } else if visited.contains(&pos) {
+                } else if visited[pos] {
                     "O".to_string()
                 } else {
                     format!("{cell}")

@@ -1,5 +1,6 @@
 pub mod grid;
 
+use grid::Grid;
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
@@ -239,9 +240,9 @@ pub trait Map {
         open: Self::Cell,
         start: Position,
         end: Position,
-    ) -> (Option<usize>, FxHashMap<Position, usize>) {
+    ) -> (Option<usize>, Grid<usize>) {
         let mut heap = BinaryHeap::from([(Reverse(0), start)]);
-        let mut lows = FxHashMap::default();
+        let mut lows = Grid::fill(usize::MAX, self.width(), self.height());
         while let Some((Reverse(dist), pos)) = heap.pop() {
             let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
             if dist > prev_dist {
@@ -250,7 +251,7 @@ pub trait Map {
             if prev_dist < usize::MAX {
                 continue;
             }
-            lows.insert(pos, dist);
+            lows[pos] = dist;
             if pos == end {
                 continue;
             }
@@ -272,11 +273,11 @@ pub trait Map {
         end: Position,
     ) -> (
         Option<usize>,
-        FxHashMap<Position, usize>,
+        Grid<usize>,
         FxHashMap<Position, FxHashSet<Position>>,
     ) {
         let mut heap = BinaryHeap::from([(Reverse(0), start, None)]);
-        let mut lows = FxHashMap::default();
+        let mut lows = Grid::fill(usize::MAX, self.width(), self.height());
         let mut backtracks = FxHashMap::default();
         while let Some((Reverse(dist), pos, maybe_prev)) = heap.pop() {
             let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
@@ -292,7 +293,7 @@ pub trait Map {
             if prev_dist < usize::MAX {
                 continue;
             }
-            lows.insert(pos, dist);
+            lows[pos] = dist;
             if pos == end {
                 continue;
             }
