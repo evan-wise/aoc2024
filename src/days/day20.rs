@@ -51,25 +51,19 @@ impl Solution for Day20 {
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        if let (Some(base), lows, backtracks) =
-            self.backtrack_minimal_path(Cell::Empty, self.start, self.end)
-        {
-            let (_, reverse_lows) = self.minimal_path(Cell::Empty, self.end, self.start);
-            let mut cheats = FxHashMap::default();
-            for pos in &backtrack(self.end, &backtracks) {
-                self.explore_two_steps(*pos, base, &lows, &reverse_lows, &mut cheats);
-            }
-            let cheat_threshold = if self.live { 100 } else { 50 };
-            let mut good_cheats = 0 as usize;
-            for (_, time) in &cheats {
-                if base - time >= cheat_threshold {
-                    good_cheats += 1;
-                }
-            }
-            Ok(Answers::part1(good_cheats))
-        } else {
-            Ok(Answers::None)
+        let (maybe_base, lows, backtracks) =
+            self.backtrack_minimal_path(Cell::Empty, self.start, self.end);
+        let base = maybe_base.ok_or("no solution to input maze")?;
+        let (_, reverse_lows) = self.minimal_path(Cell::Empty, self.end, self.start);
+        let mut cheats = FxHashMap::default();
+        for pos in &backtrack(self.end, &backtracks) {
+            self.explore_two_steps(*pos, base, &lows, &reverse_lows, &mut cheats);
         }
+        let cheat_threshold = if self.live { 100 } else { 50 };
+        let good_cheats = cheats.iter().fold(0usize, |a, (_, time)| {
+            a + if base - time >= cheat_threshold { 1 } else { 0 }
+        });
+        Ok(Answers::part1(good_cheats))
     }
 }
 
