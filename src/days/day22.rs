@@ -16,18 +16,25 @@ impl Solution for Day22 {
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
         let filename = "./data/day22.txt";
         let lines = read_lines(filename)?;
-        self.seeds = lines.flatten().map(|l| l.parse::<usize>()).collect::<Result<Vec<_>, _>>()?;
+        self.seeds = lines
+            .flatten()
+            .map(|l| l.parse::<usize>())
+            .collect::<Result<Vec<_>, _>>()?;
         Ok(())
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        let part1: usize = self.seeds.iter().map(|s| {
-            let mut result = *s;
-            for _ in 0..2000 {
-                result = prng(result);
-            }
-            result
-        }).sum();
+        let part1: usize = self
+            .seeds
+            .iter()
+            .map(|s| {
+                let mut result = *s;
+                for _ in 0..2000 {
+                    result = prng(result);
+                }
+                result
+            })
+            .sum();
         Ok(Answers::part1(part1))
     }
 }
