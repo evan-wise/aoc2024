@@ -1,4 +1,5 @@
 use crate::aoc::{read_lines, Answers, Position, Solution};
+use itertools::Itertools;
 use std::error::Error;
 use std::fmt::Display;
 
@@ -6,7 +7,6 @@ use std::fmt::Display;
 pub struct Day21 {
     codes: Vec<String>,
     numpad_positions: [Position; 11],
-    dpad_positions: [Position; 5],
 }
 
 impl Day21 {
@@ -26,14 +26,13 @@ impl Day21 {
                 (2, 0),
                 (2, 3),
             ],
-            dpad_positions: [(1, 0), (1, 1), (0, 1), (2, 1), (2, 0)],
         }
     }
 }
 
 impl Solution for Day21 {
     fn parse_input(&mut self) -> Result<(), Box<dyn Error>> {
-        let filename = "./examples/day21.txt";
+        let filename = "./data/day21.txt";
         let lines = read_lines(filename)?;
         for line in lines.flatten() {
             self.codes.push(line);
@@ -44,11 +43,8 @@ impl Solution for Day21 {
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let mut part1 = 0usize;
         for code in &self.codes {
-            let plan1 = self.plan_numpad_code(code).ok_or("invalid code")?;
-            let plan2 = self.plan_dpad_code(&plan1);
-            let plan3 = self.plan_dpad_code(&plan2);
-            let num = code[0..code.len()-1].parse::<usize>()?;
-            part1 += num * plan3.len();
+            let num = code[0..code.len() - 1].parse::<usize>()?;
+            part1 += num * self.seq_len(code, 2).ok_or("invalid code")?;
         }
         Ok(Answers::part1(part1))
     }
@@ -56,99 +52,141 @@ impl Solution for Day21 {
 
 #[allow(dead_code)]
 fn print_plan(code: &str, plan: &[DPad]) {
-    println!("{code}: {}", plan.iter().map(|b| format!("{b}")).collect::<String>());
+    println!(
+        "{code}: {}",
+        plan.iter().map(|b| format!("{b}")).collect::<String>()
+    );
 }
 
 impl Day21 {
-    fn plan_numpad_code(&self, code: &str) -> Option<Vec<DPad>> {
-        let mut plan = Vec::new();
-        let mut curr_button = NumPad::BA;
-        let (mut cx, mut cy) = self.numpad_positions[curr_button as usize];
-        for c in code.chars() {
-            let next_button = NumPad::parse(c).ok()?;
-            let (nx, ny) = self.numpad_positions[next_button as usize];
-            match curr_button {
-                NumPad::BA | NumPad::B0 => {
-                    while cy > ny {
-                        plan.push(DPad::BU);
-                        cy -= 1;
-                    }
-                    while cx > nx {
-                        plan.push(DPad::BL);
-                        cx -= 1;
-                    }
-                    while cx < nx {
-                        plan.push(DPad::BR);
-                        cx += 1;
-                    }
-                    plan.push(DPad::BA);
-                }
-                _ => {
-                    while cx > nx {
-                        plan.push(DPad::BL);
-                        cx -= 1;
-                    }
-                    while cx < nx {
-                        plan.push(DPad::BR);
-                        cx += 1;
-                    }
-                    while cy > ny {
-                        plan.push(DPad::BU);
-                        cy -= 1;
-                    }
-                    while cy < ny {
-                        plan.push(DPad::BD);
-                        cy += 1;
-                    }
-                    plan.push(DPad::BA);
-                }
-            }
-            curr_button = next_button;
-        }
-        Some(plan)
+    fn seq_len(&self, code: &str, depth: usize) -> Option<usize> {
+        Some(
+            format!("A{code}")
+                .chars()
+                .map(|c| NumPad::parse(c))
+                .collect::<Result<Vec<_>, _>>()
+                .ok()?
+                .iter()
+                .tuple_windows()
+                .map(|(start, end)| {
+                    self.numpad_paths(*start, *end)
+                        .iter()
+                        .map(|path| {
+                            if depth == 0 {
+                                path.len()
+                            } else {
+                                self.dpad_seq_len(path, depth)
+                            }
+                        })
+                        .min()
+                        .unwrap_or(0)
+                })
+                .sum(),
+        )
     }
 
-    fn plan_dpad_code(&self, code: &[DPad]) -> Vec<DPad> {
-        let mut plan = Vec::new();
-        let mut curr_button = DPad::BA;
-        let (mut cx, mut cy) = self.dpad_positions[curr_button as usize];
-        for &next_button in code {
-            let (nx, ny) = self.dpad_positions[next_button as usize];
-            match curr_button {
-                DPad::BA | DPad::BU => {
-                    while cy < ny {
-                        plan.push(DPad::BD);
-                        cy += 1;
-                    }
-                    while cx > nx {
-                        plan.push(DPad::BL);
-                        cx -= 1;
-                    }
-                    while cx < nx {
-                        plan.push(DPad::BR);
-                        cx += 1;
-                    }
-                    plan.push(DPad::BA);
-                }
-                _ => {
-                    while cx > nx {
-                        plan.push(DPad::BL);
-                        cx -= 1;
-                    }
-                    while cx < nx {
-                        plan.push(DPad::BR);
-                        cx += 1;
-                    }
-                    while cy > ny {
-                        plan.push(DPad::BU);
-                        cy -= 1;
-                    }
-                    plan.push(DPad::BA);
-                }
-            }
-            curr_button = next_button
+    fn dpad_seq_len(&self, path: &[DPad], depth: usize) -> usize {
+        if depth == 0 {
+            return path.len();
         }
-        plan
+
+        let mut new = vec![DPad::BA];
+        new.extend(path);
+        new.iter()
+            .tuple_windows()
+            .map(|(start, end)| {
+                self.dpad_paths(*start, *end)
+                    .iter()
+                    .map(|path| self.dpad_seq_len(path, depth - 1))
+                    .min()
+                    .unwrap_or(0)
+            })
+            .sum()
+    }
+
+    fn numpad_paths(&self, start: NumPad, end: NumPad) -> Vec<Vec<DPad>> {
+        let (sx, sy) = self.numpad_positions[start as usize];
+        let (ex, ey) = self.numpad_positions[end as usize];
+        let dx = ex as isize - sx as isize;
+        let dy = ey as isize - sy as isize;
+        let h_button = if dx > 0 { DPad::BR } else { DPad::BL };
+        let v_button = if dy > 0 { DPad::BD } else { DPad::BU };
+        if dx == 0 {
+            let mut path = vec![v_button; dy.abs() as usize];
+            path.push(DPad::BA);
+            return vec![path];
+        }
+        if dy == 0 {
+            let mut path = vec![h_button; dx.abs() as usize];
+            path.push(DPad::BA);
+            return vec![path];
+        }
+
+        match (sx, sy, ex, ey) {
+            // Avoid missing space if moving from bottom to left...
+            (_, 3, 0, _) => {
+                let mut path = vec![v_button; dy.abs() as usize];
+                path.extend(vec![h_button; dx.abs() as usize]);
+                path.push(DPad::BA);
+                vec![path]
+            }
+            // ...or left to bottom.
+            (0, _, _, 3) => {
+                let mut path = vec![h_button; dx.abs() as usize];
+                path.extend(vec![v_button; dy.abs() as usize]);
+                path.push(DPad::BA);
+                vec![path]
+            }
+            _ => {
+                let mut path1 = vec![v_button; dy.abs() as usize];
+                path1.extend(vec![h_button; dx.abs() as usize]);
+                path1.push(DPad::BA);
+                let mut path2 = vec![h_button; dx.abs() as usize];
+                path2.extend(vec![v_button; dy.abs() as usize]);
+                path2.push(DPad::BA);
+                vec![path1, path2]
+            }
+        }
+    }
+
+    fn dpad_paths(&self, start: DPad, end: DPad) -> Vec<Vec<DPad>> {
+        match (start, end) {
+            (DPad::BU, DPad::BD) => vec![vec![DPad::BD, DPad::BA]],
+            (DPad::BU, DPad::BL) => vec![vec![DPad::BD, DPad::BL, DPad::BA]],
+            (DPad::BU, DPad::BR) => vec![
+                vec![DPad::BD, DPad::BR, DPad::BA],
+                vec![DPad::BR, DPad::BD, DPad::BA],
+            ],
+            (DPad::BU, DPad::BA) => vec![vec![DPad::BR, DPad::BA]],
+            (DPad::BD, DPad::BU) => vec![vec![DPad::BU, DPad::BA]],
+            (DPad::BD, DPad::BL) => vec![vec![DPad::BL, DPad::BA]],
+            (DPad::BD, DPad::BR) => vec![vec![DPad::BR, DPad::BA]],
+            (DPad::BD, DPad::BA) => vec![
+                vec![DPad::BU, DPad::BR, DPad::BA],
+                vec![DPad::BR, DPad::BU, DPad::BA],
+            ],
+            (DPad::BL, DPad::BU) => vec![vec![DPad::BR, DPad::BU, DPad::BA]],
+            (DPad::BL, DPad::BD) => vec![vec![DPad::BR, DPad::BA]],
+            (DPad::BL, DPad::BR) => vec![vec![DPad::BR, DPad::BR, DPad::BA]],
+            (DPad::BL, DPad::BA) => vec![vec![DPad::BR, DPad::BR, DPad::BU, DPad::BA]],
+            (DPad::BR, DPad::BU) => vec![
+                vec![DPad::BU, DPad::BL, DPad::BA],
+                vec![DPad::BL, DPad::BU, DPad::BA],
+            ],
+            (DPad::BR, DPad::BD) => vec![vec![DPad::BL, DPad::BA]],
+            (DPad::BR, DPad::BL) => vec![vec![DPad::BL, DPad::BL, DPad::BA]],
+            (DPad::BR, DPad::BA) => vec![vec![DPad::BU, DPad::BA]],
+            (DPad::BA, DPad::BU) => vec![vec![DPad::BL, DPad::BA]],
+            (DPad::BA, DPad::BD) => vec![
+                vec![DPad::BL, DPad::BD, DPad::BA],
+                vec![DPad::BD, DPad::BL, DPad::BA],
+            ],
+            (DPad::BA, DPad::BL) => vec![vec![DPad::BD, DPad::BL, DPad::BL, DPad::BA]],
+            (DPad::BA, DPad::BR) => vec![vec![DPad::BD, DPad::BA]],
+
+            (a, b) if a == b => vec![vec![DPad::BA]],
+            (_, _) => panic!("this is impossible by construction"),
+        }
     }
 }
 
@@ -204,7 +242,7 @@ impl Display for NumPad {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 enum DPad {
     BU,
     BD,
