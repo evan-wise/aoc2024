@@ -1,5 +1,6 @@
 use crate::aoc::{read_lines, Answers, Position, Solution};
 use itertools::Itertools;
+use rustc_hash::FxHashMap;
 use std::error::Error;
 use std::fmt::Display;
 
@@ -41,12 +42,15 @@ impl Solution for Day21 {
     }
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
-        let mut part1 = 0usize;
+        let mut memos = FxHashMap::default();
+        let mut part1 = 0;
+        let mut part2 = 0;
         for code in &self.codes {
             let num = code[0..code.len() - 1].parse::<usize>()?;
-            part1 += num * self.seq_len(code, 2).ok_or("invalid code")?;
+            part1 += num * self.seq_len(code, 2, &mut memos).ok_or("invalid code")?;
+            part2 += num * self.seq_len(code, 25, &mut memos).ok_or("invalid code")?;
         }
-        Ok(Answers::part1(part1))
+        Ok(Answers::both(part1, part2))
     }
 }
 
@@ -59,7 +63,12 @@ fn print_plan(code: &str, plan: &[DPad]) {
 }
 
 impl Day21 {
-    fn seq_len(&self, code: &str, depth: usize) -> Option<usize> {
+    fn seq_len(
+        &self,
+        code: &str,
+        depth: usize,
+        memos: &mut FxHashMap<(Vec<DPad>, usize), usize>,
+    ) -> Option<usize> {
         Some(
             format!("A{code}")
                 .chars()
@@ -75,7 +84,7 @@ impl Day21 {
                             if depth == 0 {
                                 path.len()
                             } else {
-                                self.dpad_seq_len(path, depth)
+                                self.dpad_seq_len(path, depth, memos)
                             }
                         })
                         .min()
@@ -85,23 +94,38 @@ impl Day21 {
         )
     }
 
-    fn dpad_seq_len(&self, path: &[DPad], depth: usize) -> usize {
+    fn dpad_seq_len(
+        &self,
+        path: &[DPad],
+        depth: usize,
+        memos: &mut FxHashMap<(Vec<DPad>, usize), usize>,
+    ) -> usize {
         if depth == 0 {
             return path.len();
         }
 
+        let key = (path.to_vec(), depth);
+
+        if let Some(result) = memos.get(&key) {
+            return *result;
+        }
+
         let mut new = vec![DPad::BA];
         new.extend(path);
-        new.iter()
+
+        let result = new
+            .iter()
             .tuple_windows()
             .map(|(start, end)| {
                 self.dpad_paths(*start, *end)
                     .iter()
-                    .map(|path| self.dpad_seq_len(path, depth - 1))
+                    .map(|path| self.dpad_seq_len(path, depth - 1, memos))
                     .min()
                     .unwrap_or(0)
             })
-            .sum()
+            .sum();
+        memos.insert(key, result);
+        result
     }
 
     fn numpad_paths(&self, start: NumPad, end: NumPad) -> Vec<Vec<DPad>> {
@@ -242,7 +266,7 @@ impl Display for NumPad {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(Hash, PartialEq, Eq, Clone, Copy, Debug)]
 enum DPad {
     BU,
     BD,
