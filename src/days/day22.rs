@@ -39,15 +39,13 @@ impl Solution for Day22 {
     }
 }
 
-const CUTOFF: usize = 2usize.pow(24);
-
 fn prng(val: usize) -> usize {
     let mut result = val;
-    result ^= result * 64;
-    result %= CUTOFF;
-    result ^= result / 32;
-    result %= CUTOFF;
-    result ^= result * 2048;
-    result %= CUTOFF;
+    result ^= result << 6;
+    result &= 0x00FFFFFF;
+    result ^= result >> 5;
+    result &= 0x00FFFFFF;
+    result ^= result << 11;
+    result &= 0x00FFFFFF;
     result
 }
