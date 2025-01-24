@@ -31,7 +31,7 @@ impl Solution for Day22 {
             .seeds
             .iter()
             .map(|&s| {
-                PrngIterator::new(s)
+                Prng::new(s)
                     .nth(1999)
                     .ok_or("prng did not produce enough values")
             })
@@ -44,7 +44,7 @@ impl Solution for Day22 {
             .fold(FxHashMap::default(), |mut a, &s| {
                 let mut seen = FxHashSet::default();
                 for (val, tup) in std::iter::once(s)
-                    .chain(PrngIterator::new(s).take(2000))
+                    .chain(Prng::new(s).take(2000))
                     .map(|a| (a % 10) as isize)
                     .tuple_windows()
                     .map(|(a, b)| (b, b - a))
@@ -64,17 +64,17 @@ impl Solution for Day22 {
     }
 }
 
-struct PrngIterator {
+struct Prng {
     curr: usize,
 }
 
-impl PrngIterator {
-    fn new(seed: usize) -> PrngIterator {
-        PrngIterator { curr: seed }
+impl Prng {
+    fn new(seed: usize) -> Prng {
+        Prng { curr: seed }
     }
 }
 
-impl Iterator for PrngIterator {
+impl Iterator for Prng {
     type Item = usize;
     fn next(&mut self) -> Option<Self::Item> {
         self.curr ^= self.curr << 6;
