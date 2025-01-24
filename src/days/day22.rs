@@ -60,7 +60,6 @@ impl Solution for Day22 {
             .values()
             .max()
             .ok_or("no payoffs found")?;
-
         Ok(Answers::both(part1, part2))
     }
 }
