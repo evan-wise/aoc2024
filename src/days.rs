@@ -20,6 +20,7 @@ pub mod day19;
 pub mod day20;
 pub mod day21;
 pub mod day22;
+pub mod day23;
 
 pub fn solutions() -> Vec<Box<dyn crate::aoc::Solution>> {
     vec![
@@ -45,5 +46,6 @@ pub fn solutions() -> Vec<Box<dyn crate::aoc::Solution>> {
         Box::new(day20::Day20::new()),
         Box::new(day21::Day21::new()),
         Box::new(day22::Day22::new()),
+        Box::new(day23::Day23::new()),
     ]
 }
