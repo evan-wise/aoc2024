@@ -33,7 +33,6 @@ impl Solution for Day22 {
             .map(|&s| {
                 Prng::new(s)
                     .nth(1999)
-                    .ok_or("prng did not produce enough values")
             })
             .flatten()
             .sum();
