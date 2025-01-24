@@ -35,8 +35,7 @@ impl Solution for Day22 {
                     .nth(1999)
                     .ok_or("prng did not produce enough values")
             })
-            .collect::<Result<Vec<_>, _>>()?
-            .into_iter()
+            .flatten()
             .sum();
         let part2 = *self
             .seeds
