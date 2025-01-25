@@ -37,7 +37,8 @@ impl Solution for Day23 {
             .iter()
             .filter(|&c| c.iter().any(|s| s.starts_with("t")))
             .count();
-        Ok(Answers::part1(part1))
+        let part2 = self.network.largest_clique().join(",");
+        Ok(Answers::both(part1, part2))
     }
 }
 
@@ -123,6 +124,46 @@ impl<T: Hash + Eq + Clone + Ord> Graph<T> {
                 .collect();
             current.push(v.clone());
             self.extend_clique(current, &mut new_candidates, k, cliques);
+            current.pop();
+        }
+    }
+
+    fn largest_clique(&self) -> Vec<T> {
+        let mut cliques = Vec::new();
+        let mut nodes: Vec<T> = self.nodes().cloned().collect();
+        nodes.sort();
+        for (i, node) in nodes.iter().enumerate() {
+            let mut current = vec![node.clone()];
+            let mut candidates: Vec<T> = nodes[i + 1..]
+                .iter()
+                .filter(|&v| self.contains_edge(node, v))
+                .cloned()
+                .collect();
+            self.extend_largest_clique(&mut current, &mut candidates, &mut cliques);
+        }
+        cliques.sort_by(|a, b| b.len().cmp(&a.len()));
+        cliques[0].sort();
+        cliques[0].clone()
+    }
+
+    fn extend_largest_clique(
+        &self,
+        current: &mut Vec<T>,
+        candidates: &mut Vec<T>,
+        cliques: &mut Vec<Vec<T>>,
+    ) {
+        if candidates.len() == 0 {
+            cliques.push(current.clone());
+            return;
+        }
+        while let Some(v) = candidates.pop() {
+            let mut new_candidates: Vec<T> = candidates
+                .iter()
+                .filter(|&u| self.contains_edge(&v, u))
+                .cloned()
+                .collect();
+            current.push(v.clone());
+            self.extend_largest_clique(current, &mut new_candidates, cliques);
             current.pop();
         }
     }
