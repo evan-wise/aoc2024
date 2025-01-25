@@ -30,10 +30,7 @@ impl Solution for Day22 {
         let part1: usize = self
             .seeds
             .iter()
-            .map(|&s| {
-                Prng::new(s)
-                    .nth(1999)
-            })
+            .map(|&s| Prng::new(s).nth(1999))
             .flatten()
             .sum();
         let part2 = *self
