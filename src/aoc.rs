@@ -263,7 +263,7 @@ pub trait Map {
                 }
             }
         }
-        (lows.get(&end).copied(), lows)
+        (lows.get(&end).copied().filter(|l| *l != usize::MAX), lows)
     }
 
     fn backtrack_minimal_path(
