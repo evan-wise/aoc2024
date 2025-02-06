@@ -402,3 +402,16 @@ impl Robot {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day15::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(1478649usize, 1495455usize));
+        Ok(())
+    }
+}

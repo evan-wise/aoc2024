@@ -135,3 +135,16 @@ fn compute_total(chars: &Vec<char>, handle_dos: bool) -> Result<i32, Box<dyn Err
     }
     Ok(total)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day03::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(161289189, 83595109));
+        Ok(())
+    }
+}

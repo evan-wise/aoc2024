@@ -76,3 +76,16 @@ fn count_recipes(
     }
     *memos.get(pattern).unwrap_or(&0)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day19::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(228, 584553405070389usize));
+        Ok(())
+    }
+}

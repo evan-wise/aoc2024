@@ -168,3 +168,16 @@ impl<T: Hash + Eq + Clone + Ord> Graph<T> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day23::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(1110usize, "ej,hm,ks,ms,ns,rb,rq,sc,so,un,vb,vd,wd"));
+        Ok(())
+    }
+}

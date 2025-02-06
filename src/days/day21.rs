@@ -286,3 +286,16 @@ impl Display for DPad {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day21::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(248108usize, 303836969158972usize));
+        Ok(())
+    }
+}

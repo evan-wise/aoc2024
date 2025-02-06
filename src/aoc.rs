@@ -30,7 +30,7 @@ pub trait Solution: Debug {
 
 // Suppress warnings since Part1 and None will only be used early in solutions.
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum Answers {
     Both(String, String),
     Part1(String),

@@ -74,3 +74,16 @@ fn blink(stone_count_by_num: &HashMap<u64, u64>) -> Result<HashMap<u64, u64>, Pa
     }
     Ok(new)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day11::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(199753u64, 239413123020116u64));
+        Ok(())
+    }
+}

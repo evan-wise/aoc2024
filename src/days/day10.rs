@@ -123,3 +123,16 @@ impl Solution for Day10 {
         Ok(Answers::both(score, rating))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day10::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(629usize, 1242));
+        Ok(())
+    }
+}

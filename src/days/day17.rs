@@ -169,3 +169,16 @@ impl Computer {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day17::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both("6,7,5,2,1,3,5,1,7", 216549846240877u128));
+        Ok(())
+    }
+}

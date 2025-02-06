@@ -81,3 +81,16 @@ impl Iterator for Prng {
         Some(self.curr)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day22::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(12979353889usize, 1449isize));
+        Ok(())
+    }
+}

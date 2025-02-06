@@ -133,3 +133,16 @@ fn add(pos1: (i32, i32), pos2: (i32, i32)) -> (i32, i32) {
 fn sub(pos1: (i32, i32), pos2: (i32, i32)) -> (i32, i32) {
     (pos1.0 - pos2.0, pos1.1 - pos2.1)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day08::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(364usize, 1231usize));
+        Ok(())
+    }
+}

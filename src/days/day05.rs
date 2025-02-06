@@ -91,3 +91,16 @@ impl Solution for Day05 {
         Ok(Answers::both(correct_total, corrected_total))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day05::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(5639usize, 5273usize));
+        Ok(())
+    }
+}

@@ -190,3 +190,16 @@ fn check_cross(i: usize, j: usize, wordsearch: &Vec<Vec<u8>>) -> bool {
         _ => false,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day04::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(2414, 1871));
+        Ok(())
+    }
+}

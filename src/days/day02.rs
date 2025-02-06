@@ -73,3 +73,16 @@ fn check_safety(nums: &Vec<i32>) -> bool {
     }
     is_safe
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day02::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(663, 692));
+        Ok(())
+    }
+}

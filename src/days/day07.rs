@@ -85,3 +85,16 @@ fn check_equation(test_val: u64, nums: &[u64], allow_concat: bool) -> bool {
 
     false
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day07::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(6392012777720u64, 61561126043536u64));
+        Ok(())
+    }
+}

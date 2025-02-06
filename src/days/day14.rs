@@ -136,3 +136,16 @@ where
     let mut uniq = HashSet::new();
     iter.into_iter().all(move |x| uniq.insert(x))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day14::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(214109808, 7687));
+        Ok(())
+    }
+}

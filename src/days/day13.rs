@@ -317,3 +317,16 @@ fn handle_det_zero(a1: i64, b1: i64, a2: i64, b2: i64, c1: i64, c2: i64) -> Diop
     }
     return solve_diophantine_eq(a1, b1, c1);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn solution() -> Result<(), Box<dyn Error>> {
+        let mut solution = Day13::new();
+        solution.parse_input()?;
+        let answers = solution.solve()?;
+        assert_eq!(answers, Answers::both(29187i64, 99968222587852i64));
+        Ok(())
+    }
+}
