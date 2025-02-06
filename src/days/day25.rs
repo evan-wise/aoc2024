@@ -63,7 +63,7 @@ impl Solution for Day25 {
                 }
             }
         }
-        Ok(Answers::part1(part1))
+        Ok(Answers::both(part1, "Yay!"))
     }
 }
 
