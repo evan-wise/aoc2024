@@ -55,7 +55,7 @@ impl Solution for Day20 {
         let (maybe_base, forward_lows, backtracks) =
             self.backtrack_minimal_path(Cell::Empty, self.start, self.end);
         let base = maybe_base.ok_or("no solution to input maze")?;
-        let (_, reverse_lows) = self.minimal_path(Cell::Empty, self.end, self.start);
+        let (_, reverse_lows) = self.pathfind(Cell::Empty, self.end, self.start);
         let mut cheats = FxHashMap::default();
         let visited = backtrack(self.end, &backtracks);
         for pos in &visited {

@@ -59,13 +59,13 @@ impl Solution for Day18 {
         }
         let start = (0, 0);
         let end = (self.size - 1, self.size - 1);
-        let (dist, _) = self.minimal_path(Cell::Safe, start, end);
+        let (dist, _) = self.pathfind(Cell::Safe, start, end);
         let mut byte_str = String::new();
         for i in self.num_bytes..self.bytes.len() {
             let byte = self.bytes[i];
             self.grid[byte] = Cell::Corrupted;
             if let Some(true) = self.chokepoint(byte) {
-                if let (None, _) = self.minimal_path(Cell::Safe, start, end) {
+                if let (None, _) = self.pathfind(Cell::Safe, start, end) {
                     byte_str = format!("{},{}", byte.0, byte.1);
                     break;
                 }

@@ -235,7 +235,7 @@ pub trait Map {
     fn height(&self) -> usize;
     fn get(&self, pos: &Position) -> Option<&Self::Cell>;
 
-    fn minimal_path(
+    fn pathfind(
         &self,
         open: Self::Cell,
         start: Position,
@@ -243,22 +243,23 @@ pub trait Map {
     ) -> (Option<usize>, Grid<usize>) {
         let mut heap = BinaryHeap::from([(Reverse(0), start)]);
         let mut lows = Grid::fill(usize::MAX, self.width(), self.height());
+        lows[start] = 0;
         while let Some((Reverse(dist), pos)) = heap.pop() {
-            let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
-            if dist > prev_dist {
-                continue;
-            }
-            if prev_dist < usize::MAX {
-                continue;
-            }
-            lows[pos] = dist;
-            if pos == end {
-                continue;
-            }
             for d in Direction::all() {
                 if let Some(((x, y), cell)) = self.go(d, &pos) {
                     if *cell == open {
-                        heap.push((Reverse(dist + 1), (x, y)));
+                        let n = (x, y);
+                        let d = dist + 1;
+                        if let Some(&p) = lows.get(&n) {
+                            if d >= p {
+                                continue;
+                            }
+                            lows[n] = d;
+                            if n == end {
+                                continue;
+                            }
+                            heap.push((Reverse(d), n));
+                        }
                     }
                 }
             }
