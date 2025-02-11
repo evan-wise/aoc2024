@@ -267,7 +267,7 @@ pub trait Map {
         (lows.get(&end).copied().filter(|l| *l != usize::MAX), lows)
     }
 
-    fn backtrack_minimal_path(
+    fn pathfind_with_backtrack(
         &self,
         open: Self::Cell,
         start: Position,
@@ -277,31 +277,30 @@ pub trait Map {
         Grid<usize>,
         FxHashMap<Position, FxHashSet<Position>>,
     ) {
-        let mut heap = BinaryHeap::from([(Reverse(0), start, None)]);
+        let mut heap = BinaryHeap::from([(Reverse(0), start)]);
         let mut lows = Grid::fill(usize::MAX, self.width(), self.height());
         let mut backtracks = FxHashMap::default();
-        while let Some((Reverse(dist), pos, maybe_prev)) = heap.pop() {
-            let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
-            if dist > prev_dist {
-                continue;
-            }
-            if let Some(prev) = maybe_prev {
-                backtracks
-                    .entry(pos)
-                    .or_insert_with(FxHashSet::default)
-                    .insert(prev);
-            }
-            if prev_dist < usize::MAX {
-                continue;
-            }
-            lows[pos] = dist;
-            if pos == end {
-                continue;
-            }
+        lows[start] = 0;
+        while let Some((Reverse(dist), pos)) = heap.pop() {
             for d in Direction::all() {
                 if let Some(((x, y), cell)) = self.go(d, &pos) {
                     if *cell == open {
-                        heap.push((Reverse(dist + 1), (x, y), Some(pos)));
+                        let n = (x, y);
+                        let d = dist + 1;
+                        if let Some(&p) = lows.get(&n) {
+                            if d >= p {
+                                continue;
+                            }
+                            lows[n] = d;
+                            backtracks
+                                .entry(n)
+                                .or_insert_with(FxHashSet::default)
+                                .insert(pos);
+                            if n == end {
+                                continue;
+                            }
+                            heap.push((Reverse(d), n));
+                        }
                     }
                 }
             }

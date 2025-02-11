@@ -53,7 +53,7 @@ impl Solution for Day20 {
 
     fn solve(&mut self) -> Result<Answers, Box<dyn Error>> {
         let (maybe_base, forward_lows, backtracks) =
-            self.backtrack_minimal_path(Cell::Empty, self.start, self.end);
+            self.pathfind_with_backtrack(Cell::Empty, self.start, self.end);
         let base = maybe_base.ok_or("no solution to input maze")?;
         let (_, reverse_lows) = self.pathfind(Cell::Empty, self.end, self.start);
         let mut cheats = FxHashMap::default();
