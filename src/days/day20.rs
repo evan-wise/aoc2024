@@ -121,14 +121,10 @@ impl Day20 {
                         min(fy + dy, self.height() - 1),
                     ),
                 ] {
-                    if let (Cell::Empty, Some(f), Some(r)) = (
-                        self.grid[pos],
-                        forward_lows.get(&from),
-                        reverse_lows.get(&pos),
-                    ) {
+                    let (cell, f, r) = (self.grid[pos], forward_lows[from], reverse_lows[pos]);
+                    if cell == Cell::Empty {
                         let time = f + dx + dy + r;
-                        let prev_cheat = *cheats.get(&(from, pos)).unwrap_or(&usize::MAX);
-                        if time < base && time < prev_cheat {
+                        if time < base {
                             cheats.insert((from, pos), time);
                         }
                     }
