@@ -1,8 +1,7 @@
 use crate::aoc::grid::Grid;
-use crate::aoc::{read_lines, Answers, Direction, Map, Position, Solution};
+use crate::aoc::{read_lines, Answers, Map, Position, Solution};
 use rustc_hash::{FxHashMap, FxHashSet};
-use std::cmp::Reverse;
-use std::collections::BinaryHeap;
+use std::cmp::min;
 use std::error::Error;
 use std::fmt::Display;
 
@@ -107,32 +106,32 @@ impl Day20 {
         reverse_lows: &Grid<usize>,
         cheats: &mut FxHashMap<(Position, Position), usize>,
     ) {
-        let mut heap = BinaryHeap::from([(Reverse(0), from, self.get(&from).unwrap())]);
-        let mut lows = Grid::fill(usize::MAX, self.width(), self.height());
-        while let Some((Reverse(dist), pos, cell)) = heap.pop() {
-            let prev_dist = *lows.get(&pos).unwrap_or(&usize::MAX);
-            if dist > prev_dist {
-                continue;
-            }
-            if prev_dist < usize::MAX {
-                continue;
-            }
-            lows[pos] = dist;
-            if let (Cell::Empty, Some(l), Some(r)) =
-                (cell, forward_lows.get(&from), reverse_lows.get(&pos))
-            {
-                let time = r + dist + l;
-                let prev_cheat = *cheats.get(&(from, pos)).unwrap_or(&usize::MAX);
-                if time < base && time < prev_cheat {
-                    cheats.insert((from, pos), time);
+        for dx in 0..=max_steps {
+            for dy in 0..=max_steps {
+                if dx == 0 && dy == 0 || dx + dy > max_steps {
+                    continue;
                 }
-            }
-            if dist >= max_steps {
-                continue;
-            }
-            for d in Direction::all() {
-                if let Some(((x, y), c)) = self.go(d, &pos) {
-                    heap.push((Reverse(dist + 1), (x, y), c));
+                let (fx, fy) = from;
+                for pos in [
+                    (fx.saturating_sub(dx), fy.saturating_sub(dy)),
+                    (min(fx + dx, self.width() - 1), fy.saturating_sub(dy)),
+                    (fx.saturating_sub(dx), min(fy + dy, self.height() - 1)),
+                    (
+                        min(fx + dx, self.width() - 1),
+                        min(fy + dy, self.height() - 1),
+                    ),
+                ] {
+                    if let (Cell::Empty, Some(f), Some(r)) = (
+                        self.grid[pos],
+                        forward_lows.get(&from),
+                        reverse_lows.get(&pos),
+                    ) {
+                        let time = f + dx + dy + r;
+                        let prev_cheat = *cheats.get(&(from, pos)).unwrap_or(&usize::MAX);
+                        if time < base && time < prev_cheat {
+                            cheats.insert((from, pos), time);
+                        }
+                    }
                 }
             }
         }
