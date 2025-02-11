@@ -177,7 +177,10 @@ mod tests {
         let mut solution = Day23::new();
         solution.parse_input()?;
         let answers = solution.solve()?;
-        assert_eq!(answers, Answers::both(1110usize, "ej,hm,ks,ms,ns,rb,rq,sc,so,un,vb,vd,wd"));
+        assert_eq!(
+            answers,
+            Answers::both(1110usize, "ej,hm,ks,ms,ns,rb,rq,sc,so,un,vb,vd,wd")
+        );
         Ok(())
     }
 }

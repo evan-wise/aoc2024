@@ -219,7 +219,10 @@ mod tests {
         let mut solution = Day24::new();
         solution.parse_input()?;
         let answers = solution.solve()?;
-        assert_eq!(answers, Answers::both(51745744348272usize, "bfq,bng,fjp,hkh,hmt,z18,z27,z31"));
+        assert_eq!(
+            answers,
+            Answers::both(51745744348272usize, "bfq,bng,fjp,hkh,hmt,z18,z27,z31")
+        );
         Ok(())
     }
 }

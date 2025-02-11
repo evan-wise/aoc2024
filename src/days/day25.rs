@@ -28,7 +28,9 @@ impl Solution for Day25 {
                 let mut levels = [0; 5];
                 let lines = part.split("\n");
                 for line in lines {
-                    if line == "" { continue; }
+                    if line == "" {
+                        continue;
+                    }
                     for (i, c) in line.chars().enumerate() {
                         if c == '#' {
                             levels[i] += 1;
@@ -41,7 +43,9 @@ impl Solution for Day25 {
                 let mut levels = [7; 5];
                 let lines = part.split("\n");
                 for line in lines {
-                    if line == "" { continue; }
+                    if line == "" {
+                        continue;
+                    }
                     for (i, c) in line.chars().enumerate() {
                         if c == '.' {
                             levels[i] -= 1;

@@ -138,7 +138,10 @@ mod tests {
         let mut solution = Day09::new();
         solution.parse_input()?;
         let answers = solution.solve()?;
-        assert_eq!(answers, Answers::both(6385338159127usize, 6415163624282usize));
+        assert_eq!(
+            answers,
+            Answers::both(6385338159127usize, 6415163624282usize)
+        );
         Ok(())
     }
 }
