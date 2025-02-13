@@ -17,8 +17,10 @@ measurements.
 
 ## Todo
 
-- Command line args for stats, slowest, etc.
-- Review solutions for common patterns.
-- Clean up any messy solutions.
-- Continue optimizing slowest solutions.
+- Review solutions for common patterns
+- Clean up any messy solutions
+- Continue optimizing slowest solutions
+- Command-line option to specify example mode (`-e`?)
+- Command-line option to pass a custom input file (`-f`)
+- Add parallelism
 
